@@ -83,6 +83,22 @@ namespace Application.Mappings
 
             // UpdateMenuCommand to Menu mapping
             CreateMap<UpdateMenuCommand, Menu>();
+
+            CreateMap<Appointment, AppointmentDto>()
+                .ForMember(dest => dest.AppointmentDateRange, opt => opt.MapFrom(src => new DateRangeDto
+                {
+                    Start = src.AppointmentDateRange.Start,
+                    End = src.AppointmentDateRange.End
+                }));
+
+            CreateMap<AppointmentDto, Appointment>()
+                .ForMember(dest => dest.AppointmentDateRange, opt => opt.MapFrom(src => new Domain.ValueObjects.DateRange(src.AppointmentDateRange.Start, src.AppointmentDateRange.End)));
+
+            CreateMap<MedicalRecord, MedicalRecordDto>()
+                .ForMember(dest => dest.PatientName, opt => opt.MapFrom(src => src.Patient.FirstName + " " + src.Patient.LastName))
+                .ForMember(dest => dest.StaffName, opt => opt.MapFrom(src => src.Staff.User.FirstName + " " + src.Staff.User.LastName));
+
+            CreateMap<MedicalRecordDto, MedicalRecord>();
         }
     }
 }
