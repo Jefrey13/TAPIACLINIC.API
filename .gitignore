@@ -1,0 +1,39 @@
+# Build artifacts
+bin/
+obj/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Mono auto generated files
+mono_crash.*
+
+# VS Code directories
+.vscode/
+.vscode/*
+
+# Visual Studio directories
+.vs/
+.vs/*
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# DotNetCore specific
+project.lock.json
+project.fragment.lock.json
+artifacts/
+project.json
+global.json
+appsettings.development.json
+appsettings.*.json
+
+# NuGet packages
+*.nupkg
+*.snupkg
+.nuget/
+packages/
