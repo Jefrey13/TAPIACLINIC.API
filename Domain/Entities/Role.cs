@@ -20,7 +20,8 @@ public class Role
 
     public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
-    public ICollection<RoleMenu> RoleMenus { get; set; }
+    // Inicializa las colecciones
+    public ICollection<RoleMenu> RoleMenus { get; set; } = new List<RoleMenu>();
 
-    public ICollection<RolePermission> RolePermissions { get; set; }
+    public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
 }

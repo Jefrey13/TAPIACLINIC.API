@@ -1,18 +1,17 @@
-﻿using Application.Models;
+﻿using Application.Commands.Roles;
+using Application.Models;
+using Application.Models.ReponseDtos;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Application.Services
 {
-    /// <summary>
-    /// Interface for Role application service.
-    /// </summary>
     public interface IRoleAppService
     {
-        Task<int> CreateRoleAsync(RoleDto roleDto);
-        Task UpdateRoleAsync(int id, RoleDto roleDto);
-        Task DeleteRoleAsync(int id);
-        Task<IEnumerable<RoleDto>> GetAllRolesAsync();
-        Task<RoleDto> GetRoleByIdAsync(int id);
+        Task<int> CreateRoleAsync(CreateRoleCommand command);
+        Task UpdateRoleAsync(int id, UpdateRoleCommand command);
+        Task DeleteRoleAsync(DeleteRoleCommand command);
+        Task<RoleResponseDto> GetRoleByIdAsync(int id);
+        Task<IEnumerable<RoleResponseDto>> GetAllRolesAsync();
     }
 }

@@ -1,4 +1,4 @@
-﻿using Application.Models;
+﻿using Application.Models.ReponseDtos;
 using MediatR;
 
 namespace Application.Queries.Roles
@@ -6,7 +6,7 @@ namespace Application.Queries.Roles
     /// <summary>
     /// Query to get all roles.
     /// </summary>
-    public class GetAllRolesQuery : IRequest<IEnumerable<RoleDto>>
+    public class GetAllRolesQuery : IRequest<IEnumerable<RoleResponseDto>>
     {
     }
 }

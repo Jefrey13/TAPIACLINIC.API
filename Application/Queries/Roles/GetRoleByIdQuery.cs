@@ -1,4 +1,4 @@
-﻿using Application.Models;
+﻿using Application.Models.ReponseDtos;
 using MediatR;
 
 namespace Application.Queries.Roles
@@ -6,7 +6,7 @@ namespace Application.Queries.Roles
     /// <summary>
     /// Query to get a role by its ID.
     /// </summary>
-    public class GetRoleByIdQuery : IRequest<RoleDto>
+    public class GetRoleByIdQuery : IRequest<RoleResponseDto>
     {
         public int Id { get; set; }
 

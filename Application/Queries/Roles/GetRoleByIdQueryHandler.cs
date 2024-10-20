@@ -1,5 +1,5 @@
 ﻿using Application.Exceptions;
-using Application.Models;
+using Application.Models.ReponseDtos;
 using Application.Queries.Roles;
 using AutoMapper;
 using Domain.Entities;
@@ -11,7 +11,7 @@ namespace Application.Handlers.Roles
     /// <summary>
     /// Handler for retrieving a role by its ID.
     /// </summary>
-    public class GetRoleByIdQueryHandler : IRequestHandler<GetRoleByIdQuery, RoleDto>
+    public class GetRoleByIdQueryHandler : IRequestHandler<GetRoleByIdQuery, RoleResponseDto>
     {
         private readonly IRoleRepository _roleRepository;
         private readonly IMapper _mapper;
@@ -22,7 +22,7 @@ namespace Application.Handlers.Roles
             _mapper = mapper;
         }
 
-        public async Task<RoleDto> Handle(GetRoleByIdQuery request, CancellationToken cancellationToken)
+        public async Task<RoleResponseDto> Handle(GetRoleByIdQuery request, CancellationToken cancellationToken)
         {
             var role = await _roleRepository.GetByIdAsync(request.Id);
             if (role == null)
@@ -30,7 +30,7 @@ namespace Application.Handlers.Roles
                 throw new NotFoundException(nameof(Role), request.Id);
             }
 
-            return _mapper.Map<RoleDto>(role);
+            return _mapper.Map<RoleResponseDto>(role);
         }
     }
 }

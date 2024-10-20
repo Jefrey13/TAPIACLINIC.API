@@ -40,6 +40,8 @@ namespace Application
             services.AddTransient<IPermissionAppService, PermissionAppService>();
             services.AddTransient<IAppointmentAppService, AppointmentAppService>();
             services.AddTransient<IMedicalRecordAppService, MedicalRecordAppService>();
+            services.AddTransient<IMenuAppService, MenuAppService>();
+            services.AddTransient<IStateAppService, StateAppService>();
 
             return services;
         }

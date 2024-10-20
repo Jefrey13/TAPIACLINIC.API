@@ -1,9 +1,15 @@
-﻿namespace Application.Models
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Models.ReponseDtos
 {
     /// <summary>
-    /// DTO representing the data for a Role.
+    /// DTO representing the response data for a Role.
     /// </summary>
-    public class RoleDto
+    public class RoleResponseDto
     {
         /// <summary>
         /// The unique identifier of the role.
@@ -26,13 +32,13 @@
         public bool Active { get; set; }
 
         /// <summary>
-        /// List of permission IDs associated with the role.
+        /// List of permissions associated with the role.
         /// </summary>
-        public List<int> PermissionIds { get; set; }
+        public List<PermissionDto> Permissions { get; set; }
 
         /// <summary>
-        /// List of menu IDs associated with the role.
+        /// List of menus associated with the role.
         /// </summary>
-        public List<int> MenuIds { get; set; }
+        public List<MenuDto> Menus { get; set; }
     }
 }

@@ -1,4 +1,6 @@
-﻿using Application.Models;
+﻿using Application.Commands.Roles;
+using Application.Models.ReponseDtos;
+using Application.Models.RequestDtos;
 using Application.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -6,6 +8,10 @@ using System.Threading.Tasks;
 
 namespace API.Controllers
 {
+    /// <summary>
+    /// API controller for managing roles.
+    /// Provides endpoints for creating, updating, deleting, and retrieving roles.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class RolesController : ControllerBase
@@ -18,11 +24,11 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Retrieves all the roles in the system.
+        /// Retrieves all roles in the system.
         /// </summary>
-        /// <returns>A list of RoleDto containing details of all roles.</returns>
+        /// <returns>A list of RoleDto objects representing all roles.</returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<RoleDto>>> GetAllRoles()
+        public async Task<ActionResult<IEnumerable<RoleResponseDto>>> GetAllRoles()
         {
             var roles = await _roleAppService.GetAllRolesAsync();
             return Ok(roles);
@@ -34,7 +40,7 @@ namespace API.Controllers
         /// <param name="id">The ID of the role to retrieve.</param>
         /// <returns>The RoleDto of the requested role, or 404 if not found.</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<RoleDto>> GetRoleById(int id)
+        public async Task<ActionResult<RoleResponseDto>> GetRoleById(int id)
         {
             var role = await _roleAppService.GetRoleByIdAsync(id);
             if (role == null)
@@ -47,12 +53,12 @@ namespace API.Controllers
         /// <summary>
         /// Creates a new role.
         /// </summary>
-        /// <param name="roleDto">The details of the role to be created.</param>
+        /// <param name="command">The command containing role details.</param>
         /// <returns>The ID of the newly created role.</returns>
         [HttpPost]
-        public async Task<ActionResult<int>> CreateRole([FromBody] RoleDto roleDto)
+        public async Task<ActionResult<int>> CreateRole([FromBody] CreateRoleCommand command)
         {
-            var createdRoleId = await _roleAppService.CreateRoleAsync(roleDto);
+            var createdRoleId = await _roleAppService.CreateRoleAsync(command);
             return CreatedAtAction(nameof(GetRoleById), new { id = createdRoleId }, createdRoleId);
         }
 
@@ -60,17 +66,13 @@ namespace API.Controllers
         /// Updates an existing role.
         /// </summary>
         /// <param name="id">The ID of the role to update.</param>
-        /// <param name="roleDto">The updated details of the role.</param>
+        /// <param name="roleDto">The updated role details.</param>
         /// <returns>No content if the update is successful, 400 if the ID mismatch occurs.</returns>
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateRole(int id, [FromBody] RoleDto roleDto)
+        public async Task<IActionResult> UpdateRole(int id, [FromBody] RoleRequestDto roleDto)
         {
-            if (id != roleDto.Id)
-            {
-                return BadRequest("Role ID in the request does not match the one in the body.");
-            }
-
-            await _roleAppService.UpdateRoleAsync(id, roleDto);
+            var command = new UpdateRoleCommand(id, roleDto);
+            await _roleAppService.UpdateRoleAsync(id, command);
             return NoContent();
         }
 
@@ -82,7 +84,7 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRole(int id)
         {
-            await _roleAppService.DeleteRoleAsync(id);
+            await _roleAppService.DeleteRoleAsync(new DeleteRoleCommand(id));
             return NoContent();
         }
     }

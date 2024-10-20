@@ -1,4 +1,4 @@
-﻿using Application.Models;
+﻿using Application.Models.RequestDtos;
 using MediatR;
 
 namespace Application.Commands.Roles
@@ -9,9 +9,9 @@ namespace Application.Commands.Roles
     public class UpdateRoleCommand : IRequest<Unit>
     {
         public int Id { get; set; }
-        public RoleDto RoleDto { get; set; }
+        public RoleRequestDto RoleDto { get; set; }
 
-        public UpdateRoleCommand(int id, RoleDto roleDto)
+        public UpdateRoleCommand(int id, RoleRequestDto roleDto)
         {
             Id = id;
             RoleDto = roleDto;

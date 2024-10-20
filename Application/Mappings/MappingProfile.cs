@@ -7,6 +7,10 @@ using Application.Models;
 using Domain.Entities;
 using Application.Commands.Staffs;
 using Application.Commands.Menus;
+using Domain.Enums;
+using Domain.ValueObjects;
+using Application.Models.ReponseDtos;
+using Application.Models.RequestDtos;
 
 namespace Application.Mappings
 {
@@ -14,91 +18,79 @@ namespace Application.Mappings
     {
         public MappingProfile()
         {
-            // Exams
-            CreateMap<CreateExamCommand, Exam>();
-            CreateMap<UpdateExamCommand, Exam>();
-            CreateMap<Exam, ExamDto>();
+            // Map de User a UserDto
+            CreateMap<User, UserDto>()
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email.Value))  // Mapear el valor del Value Object a string
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone.Value)); // Igual para PhoneNumber
 
-            // Schedules
-            CreateMap<CreateScheduleCommand, Schedule>();
-            CreateMap<UpdateScheduleCommand, Schedule>();
-            CreateMap<Schedule, ScheduleDto>();
+            // Map de UserDto a User
+            CreateMap<UserDto, User>()
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => new Email(src.Email)))  // Mapear de string a Value Object
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => new PhoneNumber(src.Phone)));
 
-            // Specialties
-            CreateMap<CreateSpecialtyCommand, Specialty>();
-            CreateMap<UpdateSpecialtyCommand, Specialty>();
-            CreateMap<Specialty, SpecialtyDto>();
-
-            // Surgeries
-            CreateMap<CreateSurgeryCommand, Surgery>();
-            CreateMap<UpdateSurgeryCommand, Surgery>();
-            CreateMap<Surgery, SurgeryDto>();
-
-            // Map from User entity to UserDto and vice versa
-            CreateMap<User, UserDto>().ReverseMap();
-
+            // Mapeo para la entidad Staff y su DTO
             CreateMap<Staff, StaffDto>()
-               .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User))
-               .ReverseMap();
+                .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User))
+                .ReverseMap();
 
-            CreateMap<CreateStaffCommand, Staff>()
-                .ForMember(dest => dest.User, opt => opt.Ignore());  // User is created separately
-
-            // Mapping from Permission entity to PermissionDto
-            CreateMap<Permission, PermissionDto>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
-                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
-                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active));
-
-            // Mapping from PermissionDto to Permission entity
-            CreateMap<PermissionDto, Permission>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
-                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
-                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active));
-
-            // Mapping from Role entity to RoleDto
-            CreateMap<Role, RoleDto>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
-                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
-                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active))
-                .ForMember(dest => dest.PermissionIds, opt => opt.MapFrom(src => src.RolePermissions.Select(rp => rp.PermissionId).ToList()))
-                .ForMember(dest => dest.MenuIds, opt => opt.MapFrom(src => src.RoleMenus.Select(rm => rm.MenuId).ToList()));
-
-            // Mapping from RoleDto to Role entity
-            CreateMap<RoleDto, Role>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
-                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
-                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active));
-
-            CreateMap<Menu, MenuDto>().ReverseMap();
-
-            // Menu to MenuDto mapping
-            CreateMap<Menu, MenuDto>()
-                .ForMember(dest => dest.ParentId, opt => opt.MapFrom(src => src.Parent != null ? src.Parent.Id : (int?)null));
-
-            // CreateMenuCommand to Menu mapping
-            CreateMap<CreateMenuCommand, Menu>();
-
-            // UpdateMenuCommand to Menu mapping
-            CreateMap<UpdateMenuCommand, Menu>();
-
+            // Mapeo para la entidad Appointment y su DTO
             CreateMap<Appointment, AppointmentDto>()
-                .ForMember(dest => dest.AppointmentDateRange, opt => opt.MapFrom(src => new DateRangeDto
-                {
-                    Start = src.AppointmentDateRange.Start,
-                    End = src.AppointmentDateRange.End
-                }));
+                .ReverseMap();
 
-            CreateMap<AppointmentDto, Appointment>()
-                .ForMember(dest => dest.AppointmentDateRange, opt => opt.MapFrom(src => new Domain.ValueObjects.DateRange(src.AppointmentDateRange.Start, src.AppointmentDateRange.End)));
-
+            // Mapeo para la entidad MedicalRecord y su DTO
             CreateMap<MedicalRecord, MedicalRecordDto>()
                 .ForMember(dest => dest.PatientName, opt => opt.MapFrom(src => src.Patient.FirstName + " " + src.Patient.LastName))
-                .ForMember(dest => dest.StaffName, opt => opt.MapFrom(src => src.Staff.User.FirstName + " " + src.Staff.User.LastName));
+                .ForMember(dest => dest.StaffName, opt => opt.MapFrom(src => src.Staff.User.FirstName + " " + src.Staff.User.LastName))
+                .ReverseMap();
 
-            CreateMap<MedicalRecordDto, MedicalRecord>();
+            // Mapeo para la entidad Menu y su DTO
+            CreateMap<Menu, MenuDto>()
+                .ReverseMap();
+
+            // Mapeo para la entidad Permission y su DTO
+            CreateMap<Permission, PermissionDto>()
+                .ReverseMap();
+
+            CreateMap<Role, RoleRequestDto>()
+     .ForMember(dest => dest.PermissionIds, opt => opt.MapFrom(src => src.RolePermissions.Select(rp => rp.PermissionId)))
+     .ForMember(dest => dest.MenuIds, opt => opt.MapFrom(src => src.RoleMenus.Select(rm => rm.MenuId)));
+
+            CreateMap<RoleRequestDto, Role>();
+
+            // Mapping from Role entity to RoleResponseDto
+            CreateMap<Role, RoleResponseDto>()
+                .ForMember(dest => dest.Permissions, opt => opt.MapFrom(src => src.RolePermissions.Select(rp => rp.Permission)))
+                .ForMember(dest => dest.Menus, opt => opt.MapFrom(src => src.RoleMenus.Select(rm => rm.Menu)));
+
+            // Mapeo para la entidad Schedule y su DTO
+            CreateMap<Schedule, ScheduleDto>()
+                .ReverseMap();
+
+            // Mapeo para la entidad Specialty y su DTO
+            CreateMap<Specialty, SpecialtyDto>()
+                .ReverseMap();
+
+            // Mapeo para la entidad Surgery y su DTO
+            CreateMap<Surgery, SurgeryDto>()
+                .ReverseMap();
+
+            // Mapeo para la entidad Exam y su DTO
+            CreateMap<Exam, ExamDto>()
+                .ReverseMap();
+
+            // Mapear de State a StateDto
+            CreateMap<State, StateDto>()
+                .ForMember(dest => dest.StateName, opt => opt.MapFrom(src => src.StateName))
+                .ForMember(dest => dest.StateType, opt => opt.MapFrom(src => src.StateType))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active));
+
+            // Mapear de StateDto a State
+            CreateMap<StateDto, State>()
+                .ForMember(dest => dest.StateName, opt => opt.MapFrom(src => src.StateName))
+                .ForMember(dest => dest.StateType, opt => opt.MapFrom(src => src.StateType))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active)); 
         }
     }
 }

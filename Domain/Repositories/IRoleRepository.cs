@@ -7,13 +7,6 @@ namespace Domain.Repositories
     public interface IRoleRepository : IRepository<Role>
     {
         /// <summary>
-        /// Retrieves roles associated with a specific user.
-        /// </summary>
-        /// <param name="userId">The ID of the user.</param>
-        /// <returns>A collection of roles assigned to the user.</returns>
-        Task<IEnumerable<Role>> GetRolesByUserIdAsync(int userId);
-
-        /// <summary>
         /// Assigns a set of menus to a role.
         /// </summary>
         /// <param name="roleId">The ID of the role to update.</param>

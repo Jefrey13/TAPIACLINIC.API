@@ -1,4 +1,4 @@
-﻿using Application.Models;
+﻿using Application.Models.RequestDtos;
 using MediatR;
 
 namespace Application.Commands.Roles
@@ -8,9 +8,9 @@ namespace Application.Commands.Roles
     /// </summary>
     public class CreateRoleCommand : IRequest<int>
     {
-        public RoleDto RoleDto { get; set; }
+        public RoleRequestDto RoleDto { get; set; }
 
-        public CreateRoleCommand(RoleDto roleDto)
+        public CreateRoleCommand(RoleRequestDto roleDto)
         {
             RoleDto = roleDto;
         }

@@ -61,3 +61,32 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+//Easy
+/**
+ * Exams
+ * Permisos
+ * Especialidades
+ * States
+ * Ciriguas
+ * Roles
+ */
+
+//MEDIUM
+/**
+ * staff (Incluir la relacion con los usuarios)
+ * Menus (relacionar con los menus)
+ * Schedule (Relacionar staff (deveriA ser la especialidad) y los formatos de fecha)
+ * 
+ **/
+
+//HARD
+/**
+ * Medical record
+ * Appointments
+ **/
+
+/**
+ * Agregar una respuesta estandar
+ * Manejar 2 dtos, para el las requests y las responses.
+ */
