@@ -1,5 +1,6 @@
 ﻿using Application.Exceptions;
 using Application.Models;
+using Application.Models.ReponseDtos;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Repositories;
@@ -9,9 +10,9 @@ namespace Application.Queries.Users
 {
     /// <summary>
     /// Handler for retrieving a user by their ID.
-    /// Maps from User entity to UserDto.
+    /// This class handles the `GetUserByIdQuery`.
     /// </summary>
-    public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDto>
+    public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserResponseDto>
     {
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
@@ -22,15 +23,16 @@ namespace Application.Queries.Users
             _mapper = mapper;
         }
 
-        public async Task<UserDto> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
+        public async Task<UserResponseDto> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
         {
             var user = await _userRepository.GetByIdAsync(request.Id);
+
             if (user == null)
             {
                 throw new NotFoundException(nameof(User), request.Id);
             }
 
-            return _mapper.Map<UserDto>(user);  // Map entity to DTO
+            return _mapper.Map<UserResponseDto>(user);
         }
     }
 }

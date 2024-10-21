@@ -1,4 +1,4 @@
-﻿using Application.Models;
+﻿using Application.Models.ReponseDtos;
 using MediatR;
 
 namespace Application.Queries.Schedules

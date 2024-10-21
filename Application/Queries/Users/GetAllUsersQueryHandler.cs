@@ -1,4 +1,5 @@
 ﻿using Application.Models;
+using Application.Models.ReponseDtos;
 using AutoMapper;
 using Domain.Repositories;
 using MediatR;
@@ -8,9 +9,9 @@ namespace Application.Queries.Users
 {
     /// <summary>
     /// Handler for retrieving all users.
-    /// Maps from User entity to UserDto.
+    /// Maps the User entity to the UserResponseDto.
     /// </summary>
-    public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, IEnumerable<UserDto>>
+    public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, IEnumerable<UserResponseDto>>
     {
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
@@ -21,10 +22,10 @@ namespace Application.Queries.Users
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<UserDto>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<UserResponseDto>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
         {
             var users = await _userRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<UserDto>>(users);  // Map User entities to DTOs
+            return _mapper.Map<IEnumerable<UserResponseDto>>(users);
         }
     }
 }

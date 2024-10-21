@@ -19,6 +19,10 @@ public class User
     public string LastName { get; set; }
 
     [Required]
+    [MaxLength(100)]
+    public string UserName { get; set; }
+
+    [Required]
     public Email Email { get; set; }  // Usando Email como un Value Object
 
     [Required]

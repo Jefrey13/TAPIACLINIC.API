@@ -18,20 +18,77 @@ namespace Application.Mappings
     {
         public MappingProfile()
         {
-            // Map de User a UserDto
-            CreateMap<User, UserDto>()
-                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email.Value))  // Mapear el valor del Value Object a string
-                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone.Value)); // Igual para PhoneNumber
+            // Mapeo de User a UserResponseDto
+            //CreateMap<User, UserResponseDto>()
+            //    .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+            //    .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+            //    .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+            //    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email.Value))  // Asumiendo que Email es un Value Object y se obtiene su valor con .Value
+            //    .ForMember(dest => dest.PhoneAddress, opt => opt.MapFrom(src => src.Phone.Value))  // Asumiendo que Phone es un Value Object y se obtiene su valor con .Value
+            //    .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender.ToString()))  // Convertir enum Gender a string
+            //    .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate))
+            //    .ForMember(dest => dest.IdCard, opt => opt.MapFrom(src => src.IdCard))
+            //    .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.State.Id))  // Mapear ID del estado
+            //    .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State.Name))  // Mapear nombre del estado
+            //    .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.Role != null ? src.Role.Id : (int?)null))  // Manejar posibles valores nulos de Role
+            //    .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : null))  // Manejar posibles valores nulos de Role
+            //    .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.Active));
 
-            // Map de UserDto a User
-            CreateMap<UserDto, User>()
-                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => new Email(src.Email)))  // Mapear de string a Value Object
-                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => new PhoneNumber(src.Phone)));
+            //// Mapeo de UserRequestDto a User
+            //CreateMap<UserRequestDto, User>()
+            //    .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+            //    .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+            //    .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+            //    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => new Email(src.Email)))  // Crear un nuevo Value Object para Email
+            //    .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => new PhoneNumber(src.PhoneAddress)))  // Crear un nuevo Value Object para PhoneNumber
+            //    .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => Enum.Parse<Gender>(src.Gender)))  // Convertir string a enum Gender
+            //    .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate))
+            //    .ForMember(dest => dest.IdCard, opt => opt.MapFrom(src => src.IdCard))
+            //    .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.StateId))  // Mapear ID del estado
+            //    .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.RoleId))  // Mapear ID del rol
+            //    .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));  // Actualizar el campo UpdatedAt automáticamente
 
-            // Mapeo para la entidad Staff y su DTO
-            CreateMap<Staff, StaffDto>()
-                .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User))
-                .ReverseMap();
+            // Mapeo de User a UserResponseDto
+            CreateMap<User, UserResponseDto>()
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email.Value))  // Mapear el valor del Email (Value Object)
+                .ForMember(dest => dest.PhoneAddress, opt => opt.MapFrom(src => src.Phone.Value))  // Mapear el valor de Phone (Value Object)
+                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender.ToString()))  // Convertir enum Gender a string
+                .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate))
+                .ForMember(dest => dest.IdCard, opt => opt.MapFrom(src => src.IdCard))
+                .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.State.Id))  // Mapear ID del estado
+                .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State.Name))  // Mapear nombre del estado
+                .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.Role != null ? src.Role.Id : (int?)null))  // Manejar posibles valores nulos de Role
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : null))  // Manejar posibles valores nulos de Role
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.Active));
+
+            // Mapeo de UserRequestDto a User
+            CreateMap<UserRequestDto, User>()
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => new Email(src.Email)))  // Crear un nuevo Value Object para Email
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => new PhoneNumber(src.PhoneAddress)))  // Crear un nuevo Value Object para PhoneNumber
+                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => Enum.Parse<Gender>(src.Gender)))  // Convertir string a enum Gender
+                .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate))
+                .ForMember(dest => dest.IdCard, opt => opt.MapFrom(src => src.IdCard))
+                .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.StateId))  // Mapear ID del estado
+                .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.RoleId))  // Mapear ID del rol
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));  // Actualizar el campo UpdatedAt automáticamente
+
+            // Mapeo de Staff a StaffResponseDto
+            CreateMap<Staff, StaffResponseDto>()
+                .ForMember(dest => dest.SpecialtyName, opt => opt.MapFrom(src => src.Specialty != null ? src.Specialty.Name : null))  // Mapear el nombre de la especialidad
+                .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User));  // Mapear User a UserResponseDto
+
+            // Mapeo de StaffRequestDto a Staff
+            CreateMap<StaffRequestDto, Staff>()
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())  // El UserId se asignará luego de crear el usuario
+                .ForMember(dest => dest.SpecialtyId, opt => opt.MapFrom(src => src.SpecialtyId))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));
 
             // Mapeo para la entidad Appointment y su DTO
             CreateMap<Appointment, AppointmentDto>()
@@ -52,8 +109,8 @@ namespace Application.Mappings
                 .ReverseMap();
 
             CreateMap<Role, RoleRequestDto>()
-     .ForMember(dest => dest.PermissionIds, opt => opt.MapFrom(src => src.RolePermissions.Select(rp => rp.PermissionId)))
-     .ForMember(dest => dest.MenuIds, opt => opt.MapFrom(src => src.RoleMenus.Select(rm => rm.MenuId)));
+        .ForMember(dest => dest.PermissionIds, opt => opt.MapFrom(src => src.RolePermissions.Select(rp => rp.PermissionId)))
+        .ForMember(dest => dest.MenuIds, opt => opt.MapFrom(src => src.RoleMenus.Select(rm => rm.MenuId)));
 
             CreateMap<RoleRequestDto, Role>();
 
@@ -80,14 +137,14 @@ namespace Application.Mappings
 
             // Mapear de State a StateDto
             CreateMap<State, StateDto>()
-                .ForMember(dest => dest.StateName, opt => opt.MapFrom(src => src.StateName))
+                .ForMember(dest => dest.StateName, opt => opt.MapFrom(src => src.Name))
                 .ForMember(dest => dest.StateType, opt => opt.MapFrom(src => src.StateType))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
                 .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active));
 
             // Mapear de StateDto a State
             CreateMap<StateDto, State>()
-                .ForMember(dest => dest.StateName, opt => opt.MapFrom(src => src.StateName))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.StateName))
                 .ForMember(dest => dest.StateType, opt => opt.MapFrom(src => src.StateType))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
                 .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active)); 

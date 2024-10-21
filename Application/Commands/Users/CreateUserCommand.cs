@@ -1,4 +1,4 @@
-﻿using Application.Models;
+﻿using Application.Models.RequestDtos;
 using MediatR;
 
 namespace Application.Commands.Users
@@ -8,9 +8,9 @@ namespace Application.Commands.Users
     /// </summary>
     public class CreateUserCommand : IRequest<int>
     {
-        public UserDto UserDto { get; set; }
+        public UserRequestDto UserDto { get; set; }
 
-        public CreateUserCommand(UserDto userDto)
+        public CreateUserCommand(UserRequestDto userDto)
         {
             UserDto = userDto;
         }

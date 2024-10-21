@@ -7,8 +7,8 @@ using MediatR;
 namespace Application.Commands.Users
 {
     /// <summary>
-    /// Handler for updating a user.
-    /// Uses AutoMapper to map from UserDto to the User entity.
+    /// Handler for updating an existing user.
+    /// This class handles the `UpdateUserCommand`.
     /// </summary>
     public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Unit>
     {
@@ -24,18 +24,18 @@ namespace Application.Commands.Users
         public async Task<Unit> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
         {
             var user = await _userRepository.GetByIdAsync(request.Id);
+
             if (user == null)
             {
                 throw new NotFoundException(nameof(User), request.Id);
             }
 
-            // Map UserDto to existing User entity
+            // Map the updated fields to the user entity
             _mapper.Map(request.UserDto, user);
 
-            // Update timestamp
-            user.UpdatedAt = DateTime.Now;
-
+            // Update user in repository
             await _userRepository.UpdateAsync(user);
+
             return Unit.Value;
         }
     }

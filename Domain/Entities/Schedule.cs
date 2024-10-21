@@ -9,9 +9,9 @@ public class Schedule
     public int Id { get; set; }
 
     [Required]
-    public int StaffId { get; set; }
-    [ForeignKey("StaffId")]
-    public Staff Staff { get; set; }
+    public int SpecialtyId { get; set; }
+    [ForeignKey("SpecialtyId")]
+    public Specialty Specialty { get; set; }
 
     [Required]
     [MaxLength(10)]

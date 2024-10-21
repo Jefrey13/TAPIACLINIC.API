@@ -1,4 +1,4 @@
-﻿namespace Application.Models
+﻿namespace Application.Models.ReponseDtos
 {
     /// <summary>
     /// DTO representing the data for a Schedule.

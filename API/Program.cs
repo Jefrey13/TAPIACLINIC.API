@@ -70,12 +70,13 @@ app.Run();
  * States
  * Ciriguas
  * Roles
+ * Menus
+ * Usuarios
+ *  * staff (Incluir la relacion con los usuarios)
  */
 
 //MEDIUM
 /**
- * staff (Incluir la relacion con los usuarios)
- * Menus (relacionar con los menus)
  * Schedule (Relacionar staff (deveriA ser la especialidad) y los formatos de fecha)
  * 
  **/
@@ -89,4 +90,22 @@ app.Run();
 /**
  * Agregar una respuesta estandar
  * Manejar 2 dtos, para el las requests y las responses.
+ * 
+ * 
+ {
+  "id": 0,
+  "firstName": "string",
+  "lastName": "string",
+  "email": "string@gmail.com",
+  "phone": "87906545",
+  "address": "string",
+  "gender": "M",
+  "birthDate": "2001-10-21T11:08:53.902Z",
+  "idCard": "73637-3737-3737S",
+  "active": true,
+  "createdAt": "2024-10-21T11:08:53.902Z",
+  "updatedAt": "2024-10-21T11:08:53.902Z",
+  "roleId": 1,
+  "stateId": 1
+}
  */

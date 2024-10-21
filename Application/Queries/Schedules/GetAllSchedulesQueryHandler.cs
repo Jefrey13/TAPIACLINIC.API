@@ -1,4 +1,4 @@
-﻿using Application.Models;
+﻿using Application.Models.ReponseDtos;
 using AutoMapper;
 using Domain.Repositories;
 using MediatR;

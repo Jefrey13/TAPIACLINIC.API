@@ -1,13 +1,13 @@
-﻿using Application.Models;
+﻿using Application.Models.ReponseDtos;
 using MediatR;
 using System.Collections.Generic;
 
 namespace Application.Queries.Users
 {
     /// <summary>
-    /// Query to get all users.
+    /// Query to retrieve all users.
     /// </summary>
-    public class GetAllUsersQuery : IRequest<IEnumerable<UserDto>>
+    public class GetAllUsersQuery : IRequest<IEnumerable<UserResponseDto>>
     {
     }
 }

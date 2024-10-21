@@ -1,5 +1,5 @@
 ﻿using Application.Commands.Schedules;
-using Application.Models;
+using Application.Models.ReponseDtos;
 using Application.Services;
 using Microsoft.AspNetCore.Mvc;
 

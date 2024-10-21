@@ -1,12 +1,17 @@
-﻿using Application.Models;
+﻿using Application.Models.ReponseDtos;
 using Application.Queries.Staffs;
 using AutoMapper;
 using Domain.Repositories;
 using MediatR;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace Application.Handlers.Staffs
+namespace Application.Queries.Staffs
 {
-    public class GetAllStaffsQueryHandler : IRequestHandler<GetAllStaffsQuery, IEnumerable<StaffDto>>
+    /// <summary>
+    /// Handler for retrieving all staff members, including user and specialty information.
+    /// </summary>
+    public class GetAllStaffsQueryHandler : IRequestHandler<GetAllStaffsQuery, IEnumerable<StaffResponseDto>>
     {
         private readonly IStaffRepository _staffRepository;
         private readonly IMapper _mapper;
@@ -17,10 +22,11 @@ namespace Application.Handlers.Staffs
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<StaffDto>> Handle(GetAllStaffsQuery request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<StaffResponseDto>> Handle(GetAllStaffsQuery request, CancellationToken cancellationToken)
         {
+            // Retrieve all staff members with their related user and specialty information
             var staffs = await _staffRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<StaffDto>>(staffs);
+            return _mapper.Map<IEnumerable<StaffResponseDto>>(staffs); // Map the result to DTOs
         }
     }
 }

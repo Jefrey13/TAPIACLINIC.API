@@ -9,7 +9,7 @@ public class State
 
     [Required]
     [MaxLength(50)]
-    public string StateName { get; set; }
+    public string Name { get; set; }
 
     [Required]
     [MaxLength(50)]

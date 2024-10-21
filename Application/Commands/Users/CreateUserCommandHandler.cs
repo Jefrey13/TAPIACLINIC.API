@@ -1,34 +1,29 @@
-﻿using Application.Models;
+﻿using Application.Commands.Users;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Repositories;
+
 using MediatR;
 
-namespace Application.Commands.Users
+/// <summary>
+/// Handler for creating a new user.
+/// Maps the UserRequestDto to the User entity and saves it to the database.
+/// </summary>
+public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, int>
 {
-    /// <summary>
-    /// Handler for creating a user.
-    /// Maps from UserDto to User entity.
-    /// </summary>
-    public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, int>
+    private readonly IUserRepository _userRepository;
+    private readonly IMapper _mapper;
+
+    public CreateUserCommandHandler(IUserRepository userRepository, IMapper mapper)
     {
-        private readonly IUserRepository _userRepository;
-        private readonly IMapper _mapper;
+        _userRepository = userRepository;
+        _mapper = mapper;
+    }
 
-        public CreateUserCommandHandler(IUserRepository userRepository, IMapper mapper)
-        {
-            _userRepository = userRepository;
-            _mapper = mapper;
-        }
-
-        public async Task<int> Handle(CreateUserCommand request, CancellationToken cancellationToken)
-        {
-            var user = _mapper.Map<User>(request.UserDto);
-            user.CreatedAt = DateTime.Now;
-            user.UpdatedAt = DateTime.Now;
-
-            await _userRepository.AddAsync(user);
-            return user.Id;
-        }
+    public async Task<int> Handle(CreateUserCommand request, CancellationToken cancellationToken)
+    {
+        var user = _mapper.Map<User>(request.UserDto);
+        await _userRepository.AddAsync(user);
+        return user.Id;
     }
 }

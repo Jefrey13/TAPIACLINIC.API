@@ -3,5 +3,5 @@
 namespace Domain.Repositories; 
 public interface IScheduleRepository : IRepository<Schedule>
     {
-        Task<IEnumerable<Schedule>> GetSchedulesByStaffIdAsync(int staffId);
+        //Task<IEnumerable<Specialty>> GetSchedulesBySpecialtyAsync(int staffId);
     }

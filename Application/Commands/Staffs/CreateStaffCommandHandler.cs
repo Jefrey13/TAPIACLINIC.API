@@ -1,11 +1,17 @@
 ﻿using Application.Commands.Staffs;
+using Application.Models.RequestDtos;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Repositories;
 using MediatR;
+using System.Threading.Tasks;
 
-namespace Application.Handlers.Staffs
+namespace Application.Commands.Staffs
 {
+    /// <summary>
+    /// Handler for creating a new staff member.
+    /// Verifies if the user exists and creates a new user if necessary.
+    /// </summary>
     public class CreateStaffCommandHandler : IRequestHandler<CreateStaffCommand, int>
     {
         private readonly IStaffRepository _staffRepository;
@@ -21,11 +27,22 @@ namespace Application.Handlers.Staffs
 
         public async Task<int> Handle(CreateStaffCommand request, CancellationToken cancellationToken)
         {
-            // Create user first
-            var user = _mapper.Map<User>(request.StaffDto.User);
-            await _userRepository.AddAsync(user);
+            // Check if the user already exists by UserName
+            var existingUser = await _userRepository.GetUserByUserNameAsync(request.StaffDto.User.UserName);
 
-            // Create staff
+            User user;
+            if (existingUser == null)
+            {
+                // Create a new user if not found
+                user = _mapper.Map<User>(request.StaffDto.User);
+                await _userRepository.AddAsync(user);
+            }
+            else
+            {
+                user = existingUser;
+            }
+
+            // Create the staff member with the associated user
             var staff = _mapper.Map<Staff>(request.StaffDto);
             staff.UserId = user.Id;
             await _staffRepository.AddAsync(staff);

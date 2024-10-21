@@ -7,8 +7,8 @@ using MediatR;
 namespace Application.Handlers.Users
 {
     /// <summary>
-    /// Handler for deleting a user by ID.
-    /// Throws a NotFoundException if the user doesn't exist.
+    /// Handler for deleting a user by their ID.
+    /// This class handles the `DeleteUserCommand`.
     /// </summary>
     public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, Unit>
     {
@@ -22,12 +22,14 @@ namespace Application.Handlers.Users
         public async Task<Unit> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
         {
             var user = await _userRepository.GetByIdAsync(request.Id);
+
             if (user == null)
             {
                 throw new NotFoundException(nameof(User), request.Id);
             }
 
             await _userRepository.DeleteAsync(user);
+
             return Unit.Value;
         }
     }

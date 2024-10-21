@@ -1,12 +1,12 @@
-﻿using Application.Models;
+﻿using Application.Models.ReponseDtos;
 using MediatR;
 
 namespace Application.Queries.Users
 {
     /// <summary>
-    /// Query to get a user by their ID.
+    /// Query to retrieve a user by their ID.
     /// </summary>
-    public class GetUserByIdQuery : IRequest<UserDto>
+    public class GetUserByIdQuery : IRequest<UserResponseDto>
     {
         public int Id { get; set; }
 

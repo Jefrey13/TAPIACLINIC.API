@@ -3,7 +3,7 @@
 namespace Application.Commands.Staffs
 {
     /// <summary>
-    /// Command to delete an existing staff.
+    /// Command to delete a staff member by ID.
     /// </summary>
     public class DeleteStaffCommand : IRequest<Unit>
     {

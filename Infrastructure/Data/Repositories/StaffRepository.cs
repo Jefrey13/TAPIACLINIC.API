@@ -1,23 +1,103 @@
 ﻿using Domain.Entities;
 using Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace Infrastructure.Data.Repositories;
-
-public class StaffRepository : BaseRepository<Staff>, IStaffRepository
+namespace Infrastructure.Data.Repositories
 {
-    public StaffRepository(ApplicationDbContext context) : base(context) { }
-
-    public async Task<Staff> GetStaffByUserIdAsync(int userId)
+    /// <summary>
+    /// Repository for managing Staff entities, including relationships with User and Specialty.
+    /// </summary>
+    public class StaffRepository : BaseRepository<Staff>, IStaffRepository
     {
-        return await _context.Staffs
-            .FirstOrDefaultAsync(s => s.UserId == userId);
-    }
+        private readonly ApplicationDbContext _context;
 
-    public async Task<IEnumerable<Staff>> GetStaffBySpecialtyIdAsync(int specialtyId)
-    {
-        return await _context.Staffs
-            .Where(s => s.SpecialtyId == specialtyId)
-            .ToListAsync();
+        public StaffRepository(ApplicationDbContext context) : base(context)
+        {
+            _context = context;
+        }
+
+        /// <summary>
+        /// Retrieves a staff member by their user ID, including the related User and Specialty.
+        /// </summary>
+        /// <param name="userId">The ID of the user associated with the staff member.</param>
+        /// <returns>The staff member with the specified user ID.</returns>
+        public async Task<Staff> GetStaffByUserIdAsync(int userId)
+        {
+            return await _context.Staffs
+                .Include(s => s.User)  // Incluir la relación con el User
+                .Include(s => s.Specialty)  // Incluir la relación con la Specialty
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+        }
+
+        /// <summary>
+        /// Retrieves all staff members associated with a specific specialty.
+        /// </summary>
+        /// <param name="specialtyId">The ID of the specialty.</param>
+        /// <returns>A list of staff members associated with the specified specialty.</returns>
+        public async Task<IEnumerable<Staff>> GetStaffBySpecialtyIdAsync(int specialtyId)
+        {
+            return await _context.Staffs
+                .Include(s => s.User)  // Incluir la relación con el User
+                .Include(s => s.Specialty)  // Incluir la relación con la Specialty
+                .Where(s => s.SpecialtyId == specialtyId)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Retrieves all staff members, including related User and Specialty information.
+        /// </summary>
+        /// <returns>A list of all staff members with their associated User and Specialty information.</returns>
+        public override async Task<IEnumerable<Staff>> GetAllAsync()
+        {
+            return await _context.Staffs
+                .Include(s => s.User)  // Incluir la relación con el User
+                .Include(s => s.Specialty)  // Incluir la relación con la Specialty
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Retrieves a staff member by their ID, including related User and Specialty information.
+        /// </summary>
+        /// <param name="id">The ID of the staff member.</param>
+        /// <returns>The staff member with the specified ID.</returns>
+        public override async Task<Staff> GetByIdAsync(int id)
+        {
+            return await _context.Staffs
+                .Include(s => s.User)  // Incluir la relación con el User
+                .Include(s => s.Specialty)  // Incluir la relación con la Specialty
+                .FirstOrDefaultAsync(s => s.Id == id);
+        }
+
+        /// <summary>
+        /// Adds a new staff member to the database.
+        /// </summary>
+        /// <param name="staff">The staff entity to add.</param>
+        public override async Task AddAsync(Staff staff)
+        {
+            _context.Staffs.Add(staff);
+            await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Updates an existing staff member in the database.
+        /// </summary>
+        /// <param name="staff">The staff entity to update.</param>
+        public override async Task UpdateAsync(Staff staff)
+        {
+            _context.Staffs.Update(staff);
+            await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Deletes a staff member from the database.
+        /// </summary>
+        /// <param name="staff">The staff entity to delete.</param>
+        public override async Task DeleteAsync(Staff staff)
+        {
+            _context.Staffs.Remove(staff);
+            await _context.SaveChangesAsync();
+        }
     }
 }

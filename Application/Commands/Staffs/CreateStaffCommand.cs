@@ -1,16 +1,16 @@
-﻿using Application.Models;
+﻿using Application.Models.RequestDtos;
 using MediatR;
 
 namespace Application.Commands.Staffs
 {
     /// <summary>
-    /// Command to create a new staff.
+    /// Command to create a new staff member.
     /// </summary>
     public class CreateStaffCommand : IRequest<int>
     {
-        public StaffDto StaffDto { get; set; }
+        public StaffRequestDto StaffDto { get; set; }
 
-        public CreateStaffCommand(StaffDto staffDto)
+        public CreateStaffCommand(StaffRequestDto staffDto)
         {
             StaffDto = staffDto;
         }

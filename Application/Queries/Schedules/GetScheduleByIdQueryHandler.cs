@@ -1,5 +1,5 @@
 ﻿using Application.Exceptions;
-using Application.Models;
+using Application.Models.ReponseDtos;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Repositories;
