@@ -1,6 +1,9 @@
 using Infrastructure;
 using Application;
 using API.Middlewares;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 //DotNetEnv.Env.Load();
 
 // Add Application layer services
-builder.Services.AddApplicationServices();  // Register Application layer services
+builder.Services.AddApplicationServices(builder.Configuration);  // Register Application layer services
 
 // Add Infrastructure layer services with configuration
 builder.Services.AddInfrastructureServices(builder.Configuration);  // Register Infrastructure layer services with configuration
@@ -24,7 +27,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCustomCors();  // Register the custom CORS middleware
 
 // Register JWT authentication
-builder.Services.AddJwtAuthentication(builder.Configuration);
+//builder.Services.AddJwtAuthentication(builder.Configuration);
 
 // Enable HTTP to HTTPS redirection
 builder.Services.AddHttpsRedirection(options =>
@@ -36,13 +39,33 @@ builder.Services.AddHttpsRedirection(options =>
 // Enable response compression
 builder.Services.AddResponseCompression();
 
+//JWT
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+});
+
 var app = builder.Build();
 
 // Enable CORS middleware
 app.UseCustomCors();  // Use the custom CORS middleware in the app pipeline
 
 // Enable JWT authentication middleware
-app.UseJwtAuthentication();
+//app.UseJwtAuthentication();
 
 // Use response compression middleware
 app.UseResponseCompression();
@@ -74,33 +97,10 @@ app.Run();
  * Usuarios
  *  * staff (Incluir la relacion con los usuarios)
  *  Schedule (Relacionar staff (deveriA ser la especialidad) y los formatos de fecha)
+ *  Medical record
  */
 
 //HARD
 /**
- * Medical record
  * Appointments
  **/
-
-/**
- * Agregar una respuesta estandar
- * Manejar 2 dtos, para el las requests y las responses.
- * 
- * 
- {
-  "id": 0,
-  "firstName": "string",
-  "lastName": "string",
-  "email": "string@gmail.com",
-  "phone": "87906545",
-  "address": "string",
-  "gender": "M",
-  "birthDate": "2001-10-21T11:08:53.902Z",
-  "idCard": "73637-3737-3737S",
-  "active": true,
-  "createdAt": "2024-10-21T11:08:53.902Z",
-  "updatedAt": "2024-10-21T11:08:53.902Z",
-  "roleId": 1,
-  "stateId": 1
-}
- */

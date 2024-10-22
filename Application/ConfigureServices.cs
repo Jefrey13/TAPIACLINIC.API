@@ -1,36 +1,35 @@
-﻿using System.Reflection;
-using Application.PipelineBehaviors;
-using Application.Services;
+﻿using Application.PipelineBehaviors;
 using Application.Services.Impl;
+using Application.Services;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
+using Microsoft.Extensions.Configuration;
 
 namespace Application
 {
     public static class ConfigureServices
     {
-        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {
-            // Register AutoMapper with the executing assembly
+            // Registrar servicios de la aplicación
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
-
-            // Register all validators in the current assembly
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-            // Register MediatR services
             services.AddMediatR(cfg =>
             {
-                // Register MediatR handlers
                 cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
-
-                // Add pipeline behaviors
-                cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>)); // Logging
-                cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>)); // Validation
+                cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+                cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
             });
 
-            // Register your application services
+            // Registrar el servicio de JWT en la capa de aplicación
+            services.AddTransient<IJwtTokenService, JwtTokenService>();
+
+            // Registrar otros servicios de la aplicación
             services.AddTransient<IExamAppService, ExamAppService>();
+            services.AddTransient<IAuthService, AuthService>();
             services.AddTransient<IScheduleAppService, ScheduleAppService>();
             services.AddTransient<ISpecialtyAppService, SpecialtyAppService>();
             services.AddTransient<ISurgeryAppService, SurgeryAppService>();
