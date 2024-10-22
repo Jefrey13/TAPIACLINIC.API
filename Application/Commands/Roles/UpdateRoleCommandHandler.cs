@@ -4,8 +4,6 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Repositories;
 using MediatR;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Application.Handlers.Roles
 {

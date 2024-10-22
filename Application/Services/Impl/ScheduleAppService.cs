@@ -1,5 +1,7 @@
-﻿using Application.Commands.Schedules;
+﻿using Application.Commands;
+using Application.Commands.Schedules;
 using Application.Models.ReponseDtos;
+using Application.Queries;
 using Application.Queries.Schedules;
 using AutoMapper;
 using MediatR;
@@ -9,7 +11,7 @@ using System.Threading.Tasks;
 namespace Application.Services.Impl
 {
     /// <summary>
-    /// Provides operations to manage staff schedules.
+    /// Provides operations to manage schedules.
     /// Uses MediatR for handling commands and queries, and AutoMapper for mapping entities to DTOs.
     /// </summary>
     public class ScheduleAppService : IScheduleAppService
@@ -24,7 +26,7 @@ namespace Application.Services.Impl
         }
 
         /// <summary>
-        /// Sends a command to create a new schedule for a staff member.
+        /// Sends a command to create a new schedule.
         /// </summary>
         /// <param name="command">The schedule data in DTO format.</param>
         /// <returns>The ID of the newly created schedule.</returns>
@@ -55,7 +57,7 @@ namespace Application.Services.Impl
         /// Queries all schedules and maps them to DTOs.
         /// </summary>
         /// <returns>A list of all schedules as DTOs.</returns>
-        public async Task<IEnumerable<ScheduleDto>> GetAllSchedulesAsync()
+        public async Task<IEnumerable<ScheduleResponseDto>> GetAllSchedulesAsync()
         {
             return await _mediator.Send(new GetAllSchedulesQuery());
         }
@@ -65,9 +67,19 @@ namespace Application.Services.Impl
         /// </summary>
         /// <param name="id">The unique ID of the schedule.</param>
         /// <returns>The DTO of the retrieved schedule.</returns>
-        public async Task<ScheduleDto> GetScheduleByIdAsync(int id)
+        public async Task<ScheduleResponseDto> GetScheduleByIdAsync(int id)
         {
             return await _mediator.Send(new GetScheduleByIdQuery(id));
+        }
+
+        /// <summary>
+        /// Retrieves schedules associated with a specific specialty.
+        /// </summary>
+        /// <param name="specialtyId">The ID of the specialty to filter schedules.</param>
+        /// <returns>A list of schedules associated with the specialty.</returns>
+        public async Task<IEnumerable<ScheduleResponseDto>> GetSchedulesBySpecialtyAsync(int specialtyId)
+        {
+            return await _mediator.Send(new GetSchedulesBySpecialtyQuery(specialtyId));
         }
     }
 }

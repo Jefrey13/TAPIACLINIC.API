@@ -6,18 +6,16 @@ using MediatR;
 
 namespace Application.Commands.Schedules
 {
-    /// <summary>
-    /// Handler for updating a schedule.
-    /// Uses AutoMapper to map from ScheduleDto to the Schedule entity.
-    /// </summary>
     public class UpdateScheduleCommandHandler : IRequestHandler<UpdateScheduleCommand, Unit>
     {
         private readonly IScheduleRepository _scheduleRepository;
+        private readonly ISpecialtyRepository _specialtyRepository;
         private readonly IMapper _mapper;
 
-        public UpdateScheduleCommandHandler(IScheduleRepository scheduleRepository, IMapper mapper)
+        public UpdateScheduleCommandHandler(IScheduleRepository scheduleRepository, ISpecialtyRepository specialtyRepository, IMapper mapper)
         {
             _scheduleRepository = scheduleRepository;
+            _specialtyRepository = specialtyRepository;
             _mapper = mapper;
         }
 
@@ -26,14 +24,17 @@ namespace Application.Commands.Schedules
             var schedule = await _scheduleRepository.GetByIdAsync(request.Id);
             if (schedule == null)
             {
-                throw new NotFoundException(nameof(Schedule), request.Id);
+                throw new NotFoundException(nameof(Schedule), request.ScheduleDto);
             }
 
-            // Map ScheduleDto to existing Schedule entity
-            _mapper.Map(request.ScheduleDto, schedule);
+            var specialty = await _specialtyRepository.GetByIdAsync(request.ScheduleDto.SpecialtyId);
+            if (specialty == null)
+            {
+                throw new NotFoundException(nameof(Schedule), request.ScheduleDto);
+            }
 
-            // Update timestamp
-            schedule.UpdatedAt = DateTime.Now;
+            schedule = _mapper.Map(request.ScheduleDto, schedule);
+            schedule.Specialty = specialty;
 
             await _scheduleRepository.UpdateAsync(schedule);
             return Unit.Value;

@@ -11,22 +11,26 @@ namespace Application.Validators
     {
         public UpdateScheduleCommandValidator()
         {
-            RuleFor(x => x.Id)
-                .GreaterThan(0).WithMessage("Schedule ID must be greater than 0.");
 
-            RuleFor(x => x.ScheduleDto.StaffId)
-                .GreaterThan(0).WithMessage("Staff ID must be greater than 0.");
+            RuleFor(x => x.ScheduleDto.SpecialtyId)
+                .GreaterThan(0)
+                .WithMessage("SpecialtyId is required.");
 
             RuleFor(x => x.ScheduleDto.DayOfWeek)
-                .NotEmpty().WithMessage("Day of the week is required.")
-                .MaximumLength(10).WithMessage("Day of the week must not exceed 10 characters.");
+                .NotEmpty()
+                .WithMessage("Day of the week is required.");
 
             RuleFor(x => x.ScheduleDto.StartTime)
-                .NotNull().WithMessage("Start time is required.");
+                .NotEmpty()
+                .WithMessage("Start time is required.");
 
             RuleFor(x => x.ScheduleDto.EndTime)
-                .NotNull().WithMessage("End time is required.")
-                .GreaterThan(x => x.ScheduleDto.StartTime).WithMessage("End time must be greater than start time.");
+                .NotEmpty()
+                .WithMessage("End time is required.");
+
+            RuleFor(x => x.ScheduleDto.EndTime)
+                .GreaterThan(x => x.ScheduleDto.StartTime)
+                .WithMessage("End time must be after the start time.");
         }
     }
 }

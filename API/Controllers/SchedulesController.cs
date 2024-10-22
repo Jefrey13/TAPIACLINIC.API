@@ -1,7 +1,11 @@
-﻿using Application.Commands.Schedules;
+﻿using Application.Commands;
+using Application.Commands.Schedules;
 using Application.Models.ReponseDtos;
+using Application.Models.RequestDtos;
 using Application.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace API.Controllers
 {
@@ -19,9 +23,9 @@ namespace API.Controllers
         /// <summary>
         /// Retrieves all schedules available in the system.
         /// </summary>
-        /// <returns>A list of ScheduleDto with details of all schedules.</returns>
+        /// <returns>A list of ScheduleResponseDto with details of all schedules.</returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ScheduleDto>>> GetAllSchedules()
+        public async Task<ActionResult<IEnumerable<ScheduleResponseDto>>> GetAllSchedules()
         {
             var schedules = await _scheduleAppService.GetAllSchedulesAsync();
             return Ok(schedules);
@@ -31,9 +35,9 @@ namespace API.Controllers
         /// Retrieves a specific schedule by its ID.
         /// </summary>
         /// <param name="id">The ID of the schedule to retrieve.</param>
-        /// <returns>The ScheduleDto of the requested schedule, or 404 if not found.</returns>
+        /// <returns>The ScheduleResponseDto of the requested schedule, or 404 if not found.</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ScheduleDto>> GetScheduleById(int id)
+        public async Task<ActionResult<ScheduleResponseDto>> GetScheduleById(int id)
         {
             var schedule = await _scheduleAppService.GetScheduleByIdAsync(id);
             if (schedule == null)
@@ -44,12 +48,12 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Creates a new schedule for a staff member.
+        /// Creates a new schedule.
         /// </summary>
         /// <param name="scheduleDto">The details of the schedule to be created.</param>
         /// <returns>The ID of the newly created schedule.</returns>
         [HttpPost]
-        public async Task<ActionResult<int>> CreateSchedule([FromBody] ScheduleDto scheduleDto)
+        public async Task<ActionResult<int>> CreateSchedule([FromBody] ScheduleResquestDto scheduleDto)
         {
             var createdScheduleId = await _scheduleAppService.CreateScheduleAsync(new CreateScheduleCommand(scheduleDto));
             return CreatedAtAction(nameof(GetScheduleById), new { id = createdScheduleId }, createdScheduleId);
@@ -62,9 +66,9 @@ namespace API.Controllers
         /// <param name="scheduleDto">The updated details of the schedule.</param>
         /// <returns>No content if the update is successful, 400 if the ID mismatch occurs.</returns>
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateSchedule(int id, [FromBody] ScheduleDto scheduleDto)
+        public async Task<IActionResult> UpdateSchedule(int id, [FromBody] ScheduleResquestDto scheduleDto)
         {
-            if (id != scheduleDto.Id)
+            if (id != id)
             {
                 return BadRequest("Schedule ID in the request does not match the one in the body.");
             }
@@ -83,6 +87,18 @@ namespace API.Controllers
         {
             await _scheduleAppService.DeleteScheduleAsync(id);
             return NoContent();
+        }
+
+        /// <summary>
+        /// Retrieves schedules associated with a specific specialty.
+        /// </summary>
+        /// <param name="specialtyId">The ID of the specialty to filter schedules.</param>
+        /// <returns>A list of schedules associated with the specialty.</returns>
+        [HttpGet("by-specialty/{specialtyId}")]
+        public async Task<ActionResult<IEnumerable<ScheduleResponseDto>>> GetSchedulesBySpecialty(int specialtyId)
+        {
+            var schedules = await _scheduleAppService.GetSchedulesBySpecialtyAsync(specialtyId);
+            return Ok(schedules);
         }
     }
 }

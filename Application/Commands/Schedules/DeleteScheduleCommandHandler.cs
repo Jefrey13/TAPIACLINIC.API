@@ -21,14 +21,12 @@ namespace Application.Commands.Schedules
         public async Task<Unit> Handle(DeleteScheduleCommand request, CancellationToken cancellationToken)
         {
             var schedule = await _scheduleRepository.GetByIdAsync(request.Id);
-
             if (schedule == null)
             {
                 throw new NotFoundException(nameof(Schedule), request.Id);
             }
 
             await _scheduleRepository.DeleteAsync(schedule);
-
             return Unit.Value;
         }
     }

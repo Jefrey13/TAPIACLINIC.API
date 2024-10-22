@@ -1,17 +1,16 @@
-﻿using Application.Models.ReponseDtos;
+﻿using Application.Models.RequestDtos;
 using MediatR;
 
 namespace Application.Commands.Schedules
 {
     /// <summary>
-    /// Command to create a new schedule.
-    /// This command contains the data required to create a schedule via ScheduleDto.
+    /// Command to create a new Schedule.
     /// </summary>
     public class CreateScheduleCommand : IRequest<int>
     {
-        public ScheduleDto ScheduleDto { get; set; }
+        public ScheduleResquestDto ScheduleDto { get; }
 
-        public CreateScheduleCommand(ScheduleDto scheduleDto)
+        public CreateScheduleCommand(ScheduleResquestDto scheduleDto)
         {
             ScheduleDto = scheduleDto;
         }

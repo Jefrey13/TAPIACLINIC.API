@@ -1,4 +1,4 @@
-﻿using Application.Models;
+﻿using Application.Exceptions;
 using AutoMapper;
 using Domain.Entities;
 using Domain.Repositories;
@@ -6,29 +6,29 @@ using MediatR;
 
 namespace Application.Commands.Schedules
 {
-    /// <summary>
-    /// Handler for creating a new schedule.
-    /// Uses AutoMapper to map from ScheduleDto to the Schedule entity.
-    /// </summary>
     public class CreateScheduleCommandHandler : IRequestHandler<CreateScheduleCommand, int>
     {
         private readonly IScheduleRepository _scheduleRepository;
+        private readonly ISpecialtyRepository _specialtyRepository;
         private readonly IMapper _mapper;
 
-        public CreateScheduleCommandHandler(IScheduleRepository scheduleRepository, IMapper mapper)
+        public CreateScheduleCommandHandler(IScheduleRepository scheduleRepository, ISpecialtyRepository specialtyRepository, IMapper mapper)
         {
             _scheduleRepository = scheduleRepository;
+            _specialtyRepository = specialtyRepository;
             _mapper = mapper;
         }
 
         public async Task<int> Handle(CreateScheduleCommand request, CancellationToken cancellationToken)
         {
-            // Map ScheduleDto to Schedule entity
-            var schedule = _mapper.Map<Schedule>(request.ScheduleDto);
+            var specialty = await _specialtyRepository.GetByIdAsync(request.ScheduleDto.SpecialtyId);
+            if (specialty == null)
+            {
+                throw new NotFoundException(nameof(Schedule), request.ScheduleDto);
+            }
 
-            // Set creation and update timestamps
-            schedule.CreatedAt = DateTime.Now;
-            schedule.UpdatedAt = DateTime.Now;
+            var schedule = _mapper.Map<Schedule>(request.ScheduleDto);
+            schedule.Specialty = specialty;
 
             await _scheduleRepository.AddAsync(schedule);
             return schedule.Id;

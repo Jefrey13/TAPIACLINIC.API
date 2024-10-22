@@ -5,11 +5,7 @@ using MediatR;
 
 namespace Application.Queries.Schedules
 {
-    /// <summary>
-    /// Handler for retrieving all schedules.
-    /// Maps from Schedule entities to ScheduleDto.
-    /// </summary>
-    public class GetAllSchedulesQueryHandler : IRequestHandler<GetAllSchedulesQuery, IEnumerable<ScheduleDto>>
+    public class GetAllSchedulesQueryHandler : IRequestHandler<GetAllSchedulesQuery, IEnumerable<ScheduleResponseDto>>
     {
         private readonly IScheduleRepository _scheduleRepository;
         private readonly IMapper _mapper;
@@ -20,10 +16,10 @@ namespace Application.Queries.Schedules
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<ScheduleDto>> Handle(GetAllSchedulesQuery request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<ScheduleResponseDto>> Handle(GetAllSchedulesQuery request, CancellationToken cancellationToken)
         {
             var schedules = await _scheduleRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<ScheduleDto>>(schedules);  // Map entities to DTOs
+            return _mapper.Map<IEnumerable<ScheduleResponseDto>>(schedules);
         }
     }
 }

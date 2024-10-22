@@ -19,36 +19,6 @@ namespace Application.Mappings
         public MappingProfile()
         {
             // Mapeo de User a UserResponseDto
-            //CreateMap<User, UserResponseDto>()
-            //    .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
-            //    .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
-            //    .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
-            //    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email.Value))  // Asumiendo que Email es un Value Object y se obtiene su valor con .Value
-            //    .ForMember(dest => dest.PhoneAddress, opt => opt.MapFrom(src => src.Phone.Value))  // Asumiendo que Phone es un Value Object y se obtiene su valor con .Value
-            //    .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender.ToString()))  // Convertir enum Gender a string
-            //    .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate))
-            //    .ForMember(dest => dest.IdCard, opt => opt.MapFrom(src => src.IdCard))
-            //    .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.State.Id))  // Mapear ID del estado
-            //    .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State.Name))  // Mapear nombre del estado
-            //    .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.Role != null ? src.Role.Id : (int?)null))  // Manejar posibles valores nulos de Role
-            //    .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : null))  // Manejar posibles valores nulos de Role
-            //    .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.Active));
-
-            //// Mapeo de UserRequestDto a User
-            //CreateMap<UserRequestDto, User>()
-            //    .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
-            //    .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
-            //    .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
-            //    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => new Email(src.Email)))  // Crear un nuevo Value Object para Email
-            //    .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => new PhoneNumber(src.PhoneAddress)))  // Crear un nuevo Value Object para PhoneNumber
-            //    .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => Enum.Parse<Gender>(src.Gender)))  // Convertir string a enum Gender
-            //    .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate))
-            //    .ForMember(dest => dest.IdCard, opt => opt.MapFrom(src => src.IdCard))
-            //    .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.StateId))  // Mapear ID del estado
-            //    .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.RoleId))  // Mapear ID del rol
-            //    .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));  // Actualizar el campo UpdatedAt automáticamente
-
-            // Mapeo de User a UserResponseDto
             CreateMap<User, UserResponseDto>()
                 .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
                 .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
@@ -119,9 +89,26 @@ namespace Application.Mappings
                 .ForMember(dest => dest.Permissions, opt => opt.MapFrom(src => src.RolePermissions.Select(rp => rp.Permission)))
                 .ForMember(dest => dest.Menus, opt => opt.MapFrom(src => src.RoleMenus.Select(rm => rm.Menu)));
 
-            // Mapeo para la entidad Schedule y su DTO
-            CreateMap<Schedule, ScheduleDto>()
-                .ReverseMap();
+            // Mapping from Schedule to ScheduleResponseDto
+            CreateMap<Schedule, ScheduleResponseDto>()
+                .ForMember(dest => dest.Specialty, opt => opt.MapFrom(src => src.Specialty))
+                .ForMember(dest => dest.DayOfWeek, opt => opt.MapFrom(src => src.DayOfWeek))
+                .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.StartTime))
+                .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.EndTime));
+
+            // Mapping from ScheduleRequestDto to Schedule
+            CreateMap<ScheduleResquestDto, Schedule>()
+                .ForMember(dest => dest.SpecialtyId, opt => opt.MapFrom(src => src.SpecialtyId))
+                .ForMember(dest => dest.DayOfWeek, opt => opt.MapFrom(src => src.DayOfWeek))
+                .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => TimeSpan.Parse(src.StartTime)))
+                .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => TimeSpan.Parse(src.EndTime)));
+
+            // Optional: Mapping from ScheduleResponseDto back to Schedule (if needed)
+            CreateMap<ScheduleResponseDto, Schedule>()
+                .ForMember(dest => dest.Specialty, opt => opt.Ignore()) // Assuming the Specialty object needs to be handled separately
+                .ForMember(dest => dest.DayOfWeek, opt => opt.MapFrom(src => src.DayOfWeek))
+                .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.StartTime))
+                .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.EndTime));
 
             // Mapeo para la entidad Specialty y su DTO
             CreateMap<Specialty, SpecialtyDto>()

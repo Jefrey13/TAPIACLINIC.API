@@ -1,4 +1,5 @@
 ﻿using Application.Models.ReponseDtos;
+using Application.Models.RequestDtos;
 using MediatR;
 
 namespace Application.Commands.Schedules
@@ -9,9 +10,9 @@ namespace Application.Commands.Schedules
     public class UpdateScheduleCommand : IRequest<Unit>
     {
         public int Id { get; set; }
-        public ScheduleDto ScheduleDto { get; set; }
+        public ScheduleResquestDto ScheduleDto { get; set; }
 
-        public UpdateScheduleCommand(int id, ScheduleDto scheduleDto)
+        public UpdateScheduleCommand(int id, ScheduleResquestDto scheduleDto)
         {
             Id = id;
             ScheduleDto = scheduleDto;

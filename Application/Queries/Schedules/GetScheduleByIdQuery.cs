@@ -4,11 +4,11 @@ using MediatR;
 namespace Application.Queries.Schedules
 {
     /// <summary>
-    /// Query to get a schedule by its ID.
+    /// Query to retrieve a Schedule by its ID.
     /// </summary>
-    public class GetScheduleByIdQuery : IRequest<ScheduleDto>
+    public class GetScheduleByIdQuery : IRequest<ScheduleResponseDto>
     {
-        public int Id { get; set; }
+        public int Id { get; }
 
         public GetScheduleByIdQuery(int id)
         {

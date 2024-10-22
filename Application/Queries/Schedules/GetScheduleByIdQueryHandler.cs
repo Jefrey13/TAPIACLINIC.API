@@ -7,11 +7,7 @@ using MediatR;
 
 namespace Application.Queries.Schedules
 {
-    /// <summary>
-    /// Handler for retrieving a schedule by ID.
-    /// Maps from Schedule entity to ScheduleDto.
-    /// </summary>
-    public class GetScheduleByIdQueryHandler : IRequestHandler<GetScheduleByIdQuery, ScheduleDto>
+    public class GetScheduleByIdQueryHandler : IRequestHandler<GetScheduleByIdQuery, ScheduleResponseDto>
     {
         private readonly IScheduleRepository _scheduleRepository;
         private readonly IMapper _mapper;
@@ -22,7 +18,7 @@ namespace Application.Queries.Schedules
             _mapper = mapper;
         }
 
-        public async Task<ScheduleDto> Handle(GetScheduleByIdQuery request, CancellationToken cancellationToken)
+        public async Task<ScheduleResponseDto> Handle(GetScheduleByIdQuery request, CancellationToken cancellationToken)
         {
             var schedule = await _scheduleRepository.GetByIdAsync(request.Id);
             if (schedule == null)
@@ -30,7 +26,7 @@ namespace Application.Queries.Schedules
                 throw new NotFoundException(nameof(Schedule), request.Id);
             }
 
-            return _mapper.Map<ScheduleDto>(schedule);  // Map entity to DTO
+            return _mapper.Map<ScheduleResponseDto>(schedule);
         }
     }
 }
