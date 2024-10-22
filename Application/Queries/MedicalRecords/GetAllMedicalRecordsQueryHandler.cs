@@ -1,4 +1,5 @@
 ﻿using Application.Models;
+using Application.Models.ReponseDtos;
 using Application.Queries.MedicalRecords;
 using AutoMapper;
 using Domain.Repositories;
@@ -9,21 +10,36 @@ using System.Threading.Tasks;
 
 namespace Application.Handlers.MedicalRecords
 {
-    public class GetAllMedicalRecordsQueryHandler : IRequestHandler<GetAllMedicalRecordsQuery, IEnumerable<MedicalRecordDto>>
+    /// <summary>
+    /// Handler for GetAllMedicalRecordsQuery.
+    /// Retrieves all medical records.
+    /// </summary>
+    public class GetAllMedicalRecordsQueryHandler : IRequestHandler<GetAllMedicalRecordsQuery, IEnumerable<MedicalRecordResponseDto>>
     {
-        private readonly IMedicalRecordRepository _medicalRecordRepository;
+        private readonly IMedicalRecordRepository _repository;
         private readonly IMapper _mapper;
 
-        public GetAllMedicalRecordsQueryHandler(IMedicalRecordRepository medicalRecordRepository, IMapper mapper)
+        /// <summary>
+        /// Initializes a new instance of the GetAllMedicalRecordsQueryHandler class.
+        /// </summary>
+        /// <param name="repository">The repository to handle the query.</param>
+        /// <param name="mapper">Mapper to convert entity to DTO.</param>
+        public GetAllMedicalRecordsQueryHandler(IMedicalRecordRepository repository, IMapper mapper)
         {
-            _medicalRecordRepository = medicalRecordRepository;
+            _repository = repository;
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<MedicalRecordDto>> Handle(GetAllMedicalRecordsQuery request, CancellationToken cancellationToken)
+        /// <summary>
+        /// Handles the query to retrieve all medical records.
+        /// </summary>
+        /// <param name="request">The query to retrieve all medical records.</param>
+        /// <param name="cancellationToken">Cancellation token for the request.</param>
+        /// <returns>An IEnumerable of MedicalRecordResponseDto containing all medical records.</returns>
+        public async Task<IEnumerable<MedicalRecordResponseDto>> Handle(GetAllMedicalRecordsQuery request, CancellationToken cancellationToken)
         {
-            var records = await _medicalRecordRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<MedicalRecordDto>>(records);
+            var medicalRecords = await _repository.GetAllAsync();
+            return _mapper.Map<IEnumerable<MedicalRecordResponseDto>>(medicalRecords);
         }
     }
 }

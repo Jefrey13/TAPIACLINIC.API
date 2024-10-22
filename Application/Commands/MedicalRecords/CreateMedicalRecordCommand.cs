@@ -1,4 +1,5 @@
 ﻿using Application.Models;
+using Application.Models.RequestDtos;
 using MediatR;
 
 namespace Application.Commands.MedicalRecords
@@ -8,9 +9,13 @@ namespace Application.Commands.MedicalRecords
     /// </summary>
     public class CreateMedicalRecordCommand : IRequest<int>
     {
-        public MedicalRecordDto MedicalRecordDto { get; set; }
+        public MedicalRecordRequestDto MedicalRecordDto { get; set; }
 
-        public CreateMedicalRecordCommand(MedicalRecordDto medicalRecordDto)
+        /// <summary>
+        /// Initializes a new instance of the CreateMedicalRecordCommand class.
+        /// </summary>
+        /// <param name="dto">The DTO containing the details of the medical record to create.</param>
+        public CreateMedicalRecordCommand(MedicalRecordRequestDto medicalRecordDto)
         {
             MedicalRecordDto = medicalRecordDto;
         }

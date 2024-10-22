@@ -65,10 +65,23 @@ namespace Application.Mappings
                 .ReverseMap();
 
             // Mapeo para la entidad MedicalRecord y su DTO
-            CreateMap<MedicalRecord, MedicalRecordDto>()
-                .ForMember(dest => dest.PatientName, opt => opt.MapFrom(src => src.Patient.FirstName + " " + src.Patient.LastName))
-                .ForMember(dest => dest.StaffName, opt => opt.MapFrom(src => src.Staff.User.FirstName + " " + src.Staff.User.LastName))
-                .ReverseMap();
+            CreateMap<MedicalRecordRequestDto, MedicalRecord>();
+
+            // Mapeo para la entidad MedicalRecord y su DTO
+            CreateMap<MedicalRecord, MedicalRecordResponseDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Patient, opt => opt.MapFrom(src => src.Patient)) // Mapear UserDto
+                .ForMember(dest => dest.Staff, opt => opt.MapFrom(src => src.Staff)) // Mapear StaffResponseDto
+                .ForMember(dest => dest.OpeningDate, opt => opt.MapFrom(src => src.OpeningDate))
+                .ForMember(dest => dest.Allergies, opt => opt.MapFrom(src => src.Allergies))
+                .ForMember(dest => dest.PastIllnesses, opt => opt.MapFrom(src => src.PastIllnesses))
+                .ForMember(dest => dest.PastSurgeries, opt => opt.MapFrom(src => src.PastSurgeries))
+                .ForMember(dest => dest.FamilyHistory, opt => opt.MapFrom(src => src.FamilyHistory))
+                .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.StateId))
+                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt));
+
 
             // Mapeo para la entidad Menu y su DTO
             CreateMap<Menu, MenuDto>()

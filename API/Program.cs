@@ -73,13 +73,8 @@ app.Run();
  * Menus
  * Usuarios
  *  * staff (Incluir la relacion con los usuarios)
+ *  Schedule (Relacionar staff (deveriA ser la especialidad) y los formatos de fecha)
  */
-
-//MEDIUM
-/**
- * Schedule (Relacionar staff (deveriA ser la especialidad) y los formatos de fecha)
- * 
- **/
 
 //HARD
 /**
