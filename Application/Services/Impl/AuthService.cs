@@ -36,5 +36,9 @@ namespace Application.Services.Impl
                 return hashedPassword == storedHash;
             }
         }
+        public async Task<bool> ChangePasswordAsync(ChangePasswordCommand command)
+        {
+            return await _mediator.Send(command);
+        }
     }
 }

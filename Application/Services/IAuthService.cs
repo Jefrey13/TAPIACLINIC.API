@@ -15,5 +15,7 @@ namespace Application.Services
         Task<LoginResponseDto> RefreshTokenAsync(RefreshTokenCommand command);
 
         bool VerifyPassword(string inputPassword, string storedHash);
+
+        Task<bool> ChangePasswordAsync(ChangePasswordCommand command);
     }
 }

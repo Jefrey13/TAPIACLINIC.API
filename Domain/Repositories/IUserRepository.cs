@@ -6,4 +6,5 @@ public interface IUserRepository : IRepository<User>
     Task<User> GetUserByEmailAsync(string email);
 
     Task<User> GetUserByUserNameAsync(string userName);
+    Task UpdatePasswordAsync(User user);
 }

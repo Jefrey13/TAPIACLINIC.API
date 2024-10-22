@@ -60,9 +60,21 @@ namespace Infrastructure.Data.Repositories
         public override async Task<IEnumerable<User>> GetAllAsync()
         {
             return await _context.Users
-                .Include(u => u.State)  // Incluir relación con el Estado
-                .Include(u => u.Role)   // Incluir relación con el Rol
+                .Include(u => u.State)
+                .Include(u => u.Role)
                 .ToListAsync();
+        }
+
+        public async Task UpdatePasswordAsync(User user)
+        {
+            var existingUser = await _context.Users.FindAsync(user.Id);
+
+            if (existingUser != null)
+            {
+                existingUser.Password = user.Password;
+                _context.Users.Update(existingUser);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

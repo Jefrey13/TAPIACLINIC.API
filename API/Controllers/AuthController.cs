@@ -31,5 +31,14 @@ namespace API.Controllers
             var response = await _authService.RefreshTokenAsync(new RefreshTokenCommand(request));
             return Ok(response);
         }
+
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto request)
+        {
+            var result = await _authService.ChangePasswordAsync(new ChangePasswordCommand(request));
+            if (result)
+                return Ok("Password changed successfully.");
+            return BadRequest("Error changing password.");
+        }
     }
 }
