@@ -1,6 +1,7 @@
 ﻿using Application.Commands.States;
 using Application.Models;
 using Application.Services;
+using API.Utils;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -23,10 +24,11 @@ namespace API.Controllers
         /// </summary>
         /// <returns>A list of StateDto containing details of all states.</returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<StateDto>>> GetAllStates()
+        public async Task<ActionResult<ApiResponse<IEnumerable<StateDto>>>> GetAllStates()
         {
             var states = await _stateAppService.GetAllStatesAsync();
-            return Ok(states);
+            var response = new ApiResponse<IEnumerable<StateDto>>(true, "States retrieved successfully", states, 200);
+            return Ok(response);
         }
 
         /// <summary>
@@ -35,14 +37,17 @@ namespace API.Controllers
         /// <param name="id">The ID of the state to retrieve.</param>
         /// <returns>The StateDto of the requested state, or 404 if not found.</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<StateDto>> GetStateById(int id)
+        public async Task<ActionResult<ApiResponse<StateDto>>> GetStateById(int id)
         {
             var state = await _stateAppService.GetStateByIdAsync(id);
             if (state == null)
             {
-                return NotFound();
+                var errorResponse = new ApiResponse<StateDto>(false, "State not found", null, 404);
+                return NotFound(errorResponse);
             }
-            return Ok(state);
+
+            var response = new ApiResponse<StateDto>(true, "State retrieved successfully", state, 200);
+            return Ok(response);
         }
 
         /// <summary>
@@ -51,10 +56,11 @@ namespace API.Controllers
         /// <param name="command">The details of the state to be created.</param>
         /// <returns>The ID of the newly created state.</returns>
         [HttpPost]
-        public async Task<ActionResult<int>> CreateState([FromBody] CreateStateCommand command)
+        public async Task<ActionResult<ApiResponse<int>>> CreateState([FromBody] CreateStateCommand command)
         {
             var createdStateId = await _stateAppService.CreateStateAsync(command);
-            return CreatedAtAction(nameof(GetStateById), new { id = createdStateId }, createdStateId);
+            var response = new ApiResponse<int>(true, "State created successfully", createdStateId, 201);
+            return CreatedAtAction(nameof(GetStateById), new { id = createdStateId }, response);
         }
 
         /// <summary>
@@ -64,15 +70,17 @@ namespace API.Controllers
         /// <param name="command">The updated details of the state.</param>
         /// <returns>No content if the update is successful, or 400 if there is a mismatch of ID.</returns>
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateState(int id, [FromBody] UpdateStateCommand command)
+        public async Task<ActionResult<ApiResponse<string>>> UpdateState(int id, [FromBody] UpdateStateCommand command)
         {
             if (id != command.Id)
             {
-                return BadRequest("State ID in the request does not match the one in the body.");
+                var errorResponse = new ApiResponse<string>(false, "State ID mismatch", null, 400);
+                return BadRequest(errorResponse);
             }
 
             await _stateAppService.UpdateStateAsync(command);
-            return NoContent();
+            var response = new ApiResponse<string>(true, "State updated successfully", null, 204);
+            return Ok(response);
         }
 
         /// <summary>
@@ -81,10 +89,11 @@ namespace API.Controllers
         /// <param name="id">The ID of the state to delete.</param>
         /// <returns>No content if the deletion is successful.</returns>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteState(int id)
+        public async Task<ActionResult<ApiResponse<string>>> DeleteState(int id)
         {
             await _stateAppService.DeleteStateAsync(new DeleteStateCommand(id));
-            return NoContent();
+            var response = new ApiResponse<string>(true, "State deleted successfully", null, 204);
+            return Ok(response);
         }
     }
 }

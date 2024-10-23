@@ -1,6 +1,7 @@
 ﻿using Application.Commands.MedicalRecords;
 using Application.Models.ReponseDtos;
 using Application.Services;
+using API.Utils;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -27,10 +28,11 @@ namespace API.Controllers
         /// </summary>
         /// <returns>A list of all medical records as MedicalRecordResponseDto.</returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MedicalRecordResponseDto>>> GetAllMedicalRecords()
+        public async Task<ActionResult<ApiResponse<IEnumerable<MedicalRecordResponseDto>>>> GetAllMedicalRecords()
         {
             var records = await _medicalRecordAppService.GetAllMedicalRecordsAsync();
-            return Ok(records);
+            var response = new ApiResponse<IEnumerable<MedicalRecordResponseDto>>(true, "Medical records retrieved successfully", records, 200);
+            return Ok(response);
         }
 
         /// <summary>
@@ -39,14 +41,16 @@ namespace API.Controllers
         /// <param name="id">The ID of the medical record to retrieve.</param>
         /// <returns>The medical record details or a 404 if not found.</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<MedicalRecordResponseDto>> GetMedicalRecordById(int id)
+        public async Task<ActionResult<ApiResponse<MedicalRecordResponseDto>>> GetMedicalRecordById(int id)
         {
             var record = await _medicalRecordAppService.GetMedicalRecordByIdAsync(id);
             if (record == null)
             {
-                return NotFound();
+                var errorResponse = new ApiResponse<MedicalRecordResponseDto>(false, "Medical record not found", null, 404);
+                return NotFound(errorResponse);
             }
-            return Ok(record);
+            var response = new ApiResponse<MedicalRecordResponseDto>(true, "Medical record retrieved successfully", record, 200);
+            return Ok(response);
         }
 
         /// <summary>
@@ -55,14 +59,16 @@ namespace API.Controllers
         /// <param name="patientId">The ID of the patient whose medical record is being retrieved.</param>
         /// <returns>The patient's medical record details or a 404 if not found.</returns>
         [HttpGet("patient/{patientId}")]
-        public async Task<ActionResult<MedicalRecordResponseDto>> GetMedicalRecordByPatientId(int patientId)
+        public async Task<ActionResult<ApiResponse<MedicalRecordResponseDto>>> GetMedicalRecordByPatientId(int patientId)
         {
             var record = await _medicalRecordAppService.GetMedicalRecordByPatientIdAsync(patientId);
             if (record == null)
             {
-                return NotFound();
+                var errorResponse = new ApiResponse<MedicalRecordResponseDto>(false, "Medical record not found for the patient", null, 404);
+                return NotFound(errorResponse);
             }
-            return Ok(record);
+            var response = new ApiResponse<MedicalRecordResponseDto>(true, "Medical record for patient retrieved successfully", record, 200);
+            return Ok(response);
         }
 
         /// <summary>
@@ -71,10 +77,11 @@ namespace API.Controllers
         /// <param name="command">The command containing the data for the new medical record.</param>
         /// <returns>The ID of the newly created medical record.</returns>
         [HttpPost]
-        public async Task<ActionResult<int>> CreateMedicalRecord([FromBody] CreateMedicalRecordCommand command)
+        public async Task<ActionResult<ApiResponse<int>>> CreateMedicalRecord([FromBody] CreateMedicalRecordCommand command)
         {
             var recordId = await _medicalRecordAppService.CreateMedicalRecordAsync(command);
-            return CreatedAtAction(nameof(GetMedicalRecordById), new { id = recordId }, recordId);
+            var response = new ApiResponse<int>(true, "Medical record created successfully", recordId, 201);
+            return CreatedAtAction(nameof(GetMedicalRecordById), new { id = recordId }, response);
         }
 
         /// <summary>
@@ -84,15 +91,17 @@ namespace API.Controllers
         /// <param name="command">The command containing the updated data for the medical record.</param>
         /// <returns>No content if the update is successful, or a BadRequest if the IDs do not match.</returns>
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateMedicalRecord(int id, [FromBody] UpdateMedicalRecordCommand command)
+        public async Task<ActionResult<ApiResponse<string>>> UpdateMedicalRecord(int id, [FromBody] UpdateMedicalRecordCommand command)
         {
             if (id != command.Id)
             {
-                return BadRequest("Record ID mismatch.");
+                var errorResponse = new ApiResponse<string>(false, "Record ID mismatch.", null, 400);
+                return BadRequest(errorResponse);
             }
 
             await _medicalRecordAppService.UpdateMedicalRecordAsync(command);
-            return NoContent();
+            var response = new ApiResponse<string>(true, "Medical record updated successfully", null, 204);
+            return Ok(response);
         }
 
         /// <summary>
@@ -101,10 +110,11 @@ namespace API.Controllers
         /// <param name="id">The ID of the medical record to delete.</param>
         /// <returns>No content if the deletion is successful.</returns>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMedicalRecord(int id)
+        public async Task<ActionResult<ApiResponse<string>>> DeleteMedicalRecord(int id)
         {
             await _medicalRecordAppService.DeleteMedicalRecordAsync(id);
-            return NoContent();
+            var response = new ApiResponse<string>(true, "Medical record deleted successfully", null, 204);
+            return Ok(response);
         }
     }
 }

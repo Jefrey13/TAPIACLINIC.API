@@ -2,6 +2,7 @@
 using Application.Models.ReponseDtos;
 using Application.Models.RequestDtos;
 using Application.Services;
+using API.Utils;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -28,10 +29,11 @@ namespace API.Controllers
         /// </summary>
         /// <returns>A list of UserResponseDto representing all users.</returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetAllUsers()
+        public async Task<ActionResult<ApiResponse<IEnumerable<UserResponseDto>>>> GetAllUsers()
         {
             var users = await _userAppService.GetAllUsersAsync();
-            return Ok(users);
+            var response = new ApiResponse<IEnumerable<UserResponseDto>>(true, "Users retrieved successfully", users, 200);
+            return Ok(response);
         }
 
         /// <summary>
@@ -40,14 +42,17 @@ namespace API.Controllers
         /// <param name="id">The ID of the user to retrieve.</param>
         /// <returns>A UserResponseDto representing the requested user.</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<UserResponseDto>> GetUserById(int id)
+        public async Task<ActionResult<ApiResponse<UserResponseDto>>> GetUserById(int id)
         {
             var user = await _userAppService.GetUserByIdAsync(id);
             if (user == null)
             {
-                return NotFound();
+                var errorResponse = new ApiResponse<UserResponseDto>(false, "User not found", null, 404);
+                return NotFound(errorResponse);
             }
-            return Ok(user);
+
+            var response = new ApiResponse<UserResponseDto>(true, "User retrieved successfully", user, 200);
+            return Ok(response);
         }
 
         /// <summary>
@@ -56,10 +61,11 @@ namespace API.Controllers
         /// <param name="userDto">The UserRequestDto containing the new user's details.</param>
         /// <returns>The ID of the newly created user.</returns>
         [HttpPost]
-        public async Task<ActionResult<int>> CreateUser([FromBody] UserRequestDto userDto)
+        public async Task<ActionResult<ApiResponse<int>>> CreateUser([FromBody] UserRequestDto userDto)
         {
             var createdUserId = await _userAppService.CreateUserAsync(new CreateUserCommand(userDto));
-            return CreatedAtAction(nameof(GetUserById), new { id = createdUserId }, createdUserId);
+            var response = new ApiResponse<int>(true, "User created successfully", createdUserId, 201);
+            return CreatedAtAction(nameof(GetUserById), new { id = createdUserId }, response);
         }
 
         /// <summary>
@@ -69,16 +75,17 @@ namespace API.Controllers
         /// <param name="userDto">The UserRequestDto containing the updated user's details.</param>
         /// <returns>No content if the update is successful, or a BadRequest if there's a mismatch in IDs.</returns>
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] UserRequestDto userDto)
+        public async Task<ActionResult<ApiResponse<string>>> UpdateUser(int id, [FromBody] UserRequestDto userDto)
         {
-            // Verifica si el objeto userDto es nulo
-            if (id == null)
+            if (id <= 0)
             {
-                return BadRequest("User id must not be null.");
+                var errorResponse = new ApiResponse<string>(false, "Invalid User ID", null, 400);
+                return BadRequest(errorResponse);
             }
 
             await _userAppService.UpdateUserAsync(new UpdateUserCommand(id, userDto));
-            return NoContent();
+            var response = new ApiResponse<string>(true, "User updated successfully", null, 204);
+            return Ok(response);
         }
 
         /// <summary>
@@ -87,10 +94,17 @@ namespace API.Controllers
         /// <param name="id">The ID of the user to delete.</param>
         /// <returns>No content if the deletion is successful.</returns>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<ActionResult<ApiResponse<string>>> DeleteUser(int id)
         {
+            if (id <= 0)
+            {
+                var errorResponse = new ApiResponse<string>(false, "Invalid User ID", null, 400);
+                return BadRequest(errorResponse);
+            }
+
             await _userAppService.DeleteUserAsync(new DeleteUserCommand(id));
-            return NoContent();
+            var response = new ApiResponse<string>(true, "User deleted successfully", null, 204);
+            return Ok(response);
         }
     }
 }

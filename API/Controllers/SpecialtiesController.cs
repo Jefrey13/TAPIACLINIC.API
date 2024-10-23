@@ -1,7 +1,10 @@
 ﻿using Application.Commands.Specialties;
 using Application.Models;
 using Application.Services;
+using API.Utils;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace API.Controllers
 {
@@ -21,10 +24,11 @@ namespace API.Controllers
         /// </summary>
         /// <returns>A list of SpecialtyDto with details of all specialties.</returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<SpecialtyDto>>> GetAllSpecialties()
+        public async Task<ActionResult<ApiResponse<IEnumerable<SpecialtyDto>>>> GetAllSpecialties()
         {
             var specialties = await _specialtyAppService.GetAllSpecialtiesAsync();
-            return Ok(specialties);
+            var response = new ApiResponse<IEnumerable<SpecialtyDto>>(true, "Specialties retrieved successfully", specialties, 200);
+            return Ok(response);
         }
 
         /// <summary>
@@ -33,14 +37,17 @@ namespace API.Controllers
         /// <param name="id">The ID of the specialty to retrieve.</param>
         /// <returns>The SpecialtyDto of the requested specialty, or 404 if not found.</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<SpecialtyDto>> GetSpecialtyById(int id)
+        public async Task<ActionResult<ApiResponse<SpecialtyDto>>> GetSpecialtyById(int id)
         {
             var specialty = await _specialtyAppService.GetSpecialtyByIdAsync(id);
             if (specialty == null)
             {
-                return NotFound();
+                var errorResponse = new ApiResponse<SpecialtyDto>(false, "Specialty not found", null, 404);
+                return NotFound(errorResponse);
             }
-            return Ok(specialty);
+
+            var response = new ApiResponse<SpecialtyDto>(true, "Specialty retrieved successfully", specialty, 200);
+            return Ok(response);
         }
 
         /// <summary>
@@ -49,10 +56,11 @@ namespace API.Controllers
         /// <param name="specialtyDto">The details of the specialty to be created.</param>
         /// <returns>The ID of the newly created specialty.</returns>
         [HttpPost]
-        public async Task<ActionResult<int>> CreateSpecialty([FromBody] SpecialtyDto specialtyDto)
+        public async Task<ActionResult<ApiResponse<int>>> CreateSpecialty([FromBody] SpecialtyDto specialtyDto)
         {
             var createdSpecialtyId = await _specialtyAppService.CreateSpecialtyAsync(new CreateSpecialtyCommand(specialtyDto));
-            return CreatedAtAction(nameof(GetSpecialtyById), new { id = createdSpecialtyId }, createdSpecialtyId);
+            var response = new ApiResponse<int>(true, "Specialty created successfully", createdSpecialtyId, 201);
+            return CreatedAtAction(nameof(GetSpecialtyById), new { id = createdSpecialtyId }, response);
         }
 
         /// <summary>
@@ -62,15 +70,17 @@ namespace API.Controllers
         /// <param name="specialtyDto">The updated details of the specialty.</param>
         /// <returns>No content if the update is successful, 400 if the ID mismatch occurs.</returns>
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateSpecialty(int id, [FromBody] SpecialtyDto specialtyDto)
+        public async Task<ActionResult<ApiResponse<string>>> UpdateSpecialty(int id, [FromBody] SpecialtyDto specialtyDto)
         {
             if (id != specialtyDto.Id)
             {
-                return BadRequest("Specialty ID in the request does not match the one in the body.");
+                var errorResponse = new ApiResponse<string>(false, "Specialty ID mismatch", null, 400);
+                return BadRequest(errorResponse);
             }
 
             await _specialtyAppService.UpdateSpecialtyAsync(new UpdateSpecialtyCommand(id, specialtyDto));
-            return NoContent();
+            var response = new ApiResponse<string>(true, "Specialty updated successfully", null, 204);
+            return Ok(response);
         }
 
         /// <summary>
@@ -79,10 +89,11 @@ namespace API.Controllers
         /// <param name="id">The ID of the specialty to delete.</param>
         /// <returns>No content if the deletion is successful.</returns>
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteSpecialty(int id)
+        public async Task<ActionResult<ApiResponse<string>>> DeleteSpecialty(int id)
         {
             await _specialtyAppService.DeleteSpecialtyAsync(id);
-            return NoContent();
+            var response = new ApiResponse<string>(true, "Specialty deleted successfully", null, 204);
+            return Ok(response);
         }
     }
 }
