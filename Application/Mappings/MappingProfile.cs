@@ -11,6 +11,7 @@ using Domain.Enums;
 using Domain.ValueObjects;
 using Application.Models.ReponseDtos;
 using Application.Models.RequestDtos;
+using Application.Models.ResponseDtos;
 
 namespace Application.Mappings
 {
@@ -60,9 +61,30 @@ namespace Application.Mappings
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));
 
-            // Mapeo para la entidad Appointment y su DTO
-            CreateMap<Appointment, AppointmentDto>()
-                .ReverseMap();
+            // Mapping from AppointmentRequestDto to Appointment
+            CreateMap<AppointmentRequestDto, Appointment>()
+                .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Date))
+                .ForMember(dest => dest.PatientId, opt => opt.MapFrom(src => src.PatientId))
+                .ForMember(dest => dest.StaffId, opt => opt.MapFrom(src => src.StaffId))
+                .ForMember(dest => dest.SpecialtyId, opt => opt.MapFrom(src => src.SpecialtyId))
+                .ForMember(dest => dest.ScheduleId, opt => opt.MapFrom(src => src.ScheduleId))
+                .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.StateId))
+                .ForMember(dest => dest.Reason, opt => opt.MapFrom(src => src.Reason))
+                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active))
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())  // CreatedAt will be set when creating the entity
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore()); // UpdatedAt will be set when updating the entity
+
+            // Mapping from Appointment to AppointmentResponseDto
+            CreateMap<Appointment, AppointmentResponseDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Date))
+                .ForMember(dest => dest.Patient, opt => opt.MapFrom(src => src.Patient))  // Map to UserResponseDto
+                .ForMember(dest => dest.Staff, opt => opt.MapFrom(src => src.Staff))  // Map to StaffResponseDto
+                .ForMember(dest => dest.Specialty, opt => opt.MapFrom(src => src.Specialty))  // Map to SpecialtyDto
+                .ForMember(dest => dest.Schedule, opt => opt.MapFrom(src => src.Schedule))  // Map to ScheduleResponseDto
+                .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State))  // Map to StateDto
+                .ForMember(dest => dest.Reason, opt => opt.MapFrom(src => src.Reason))
+                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active));
 
             // Mapeo para la entidad MedicalRecord y su DTO
             CreateMap<MedicalRecordRequestDto, MedicalRecord>();

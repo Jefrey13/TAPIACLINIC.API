@@ -1,5 +1,6 @@
 ﻿using Application.Exceptions;
-using Application.Models;
+using Application.Models.RequestDtos;
+using Application.Models.ResponseDtos;
 using Application.Queries.Appointments;
 using AutoMapper;
 using Domain.Entities;
@@ -11,7 +12,7 @@ namespace Application.Handlers.Appointments
     /// <summary>
     /// Handler for retrieving an appointment by its ID.
     /// </summary>
-    public class GetAppointmentByIdQueryHandler : IRequestHandler<GetAppointmentByIdQuery, AppointmentDto>
+    public class GetAppointmentByIdQueryHandler : IRequestHandler<GetAppointmentByIdQuery, AppointmentResponseDto>
     {
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IMapper _mapper;
@@ -22,7 +23,7 @@ namespace Application.Handlers.Appointments
             _mapper = mapper;
         }
 
-        public async Task<AppointmentDto> Handle(GetAppointmentByIdQuery request, CancellationToken cancellationToken)
+        public async Task<AppointmentResponseDto> Handle(GetAppointmentByIdQuery request, CancellationToken cancellationToken)
         {
             var appointment = await _appointmentRepository.GetByIdAsync(request.Id);
             if (appointment == null)
@@ -30,7 +31,7 @@ namespace Application.Handlers.Appointments
                 throw new NotFoundException(nameof(Appointment), request.Id);
             }
 
-            return _mapper.Map<AppointmentDto>(appointment);
+            return _mapper.Map<AppointmentResponseDto>(appointment);
         }
     }
 }

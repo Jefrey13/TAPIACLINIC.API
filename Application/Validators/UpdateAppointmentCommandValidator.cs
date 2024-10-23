@@ -10,8 +10,6 @@ namespace Application.Validators
     {
         public UpdateAppointmentCommandValidator()
         {
-            RuleFor(x => x.Id)
-                .GreaterThan(0).WithMessage("Appointment ID is required.");
 
             RuleFor(x => x.AppointmentDto.PatientId)
                 .GreaterThan(0).WithMessage("Patient ID is required.");
@@ -27,10 +25,6 @@ namespace Application.Validators
 
             RuleFor(x => x.AppointmentDto.StateId)
                 .GreaterThan(0).WithMessage("State ID is required.");
-
-            RuleFor(x => x.AppointmentDto.AppointmentDateRange.Start)
-                .LessThanOrEqualTo(x => x.AppointmentDto.AppointmentDateRange.End)
-                .WithMessage("The start date must be before or equal to the end date.");
         }
     }
 }

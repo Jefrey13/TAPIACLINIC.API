@@ -1,4 +1,4 @@
-﻿using Application.Models;
+﻿using Application.Models.ResponseDtos;
 using MediatR;
 
 namespace Application.Queries.Appointments
@@ -6,7 +6,7 @@ namespace Application.Queries.Appointments
     /// <summary>
     /// Query to get an appointment by its ID.
     /// </summary>
-    public class GetAppointmentByIdQuery : IRequest<AppointmentDto>
+    public class GetAppointmentByIdQuery : IRequest<AppointmentResponseDto>
     {
         public int Id { get; set; }
 

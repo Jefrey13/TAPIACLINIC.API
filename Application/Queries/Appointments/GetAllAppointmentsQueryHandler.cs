@@ -1,4 +1,4 @@
-﻿using Application.Models;
+﻿using Application.Models.ResponseDtos;
 using Application.Queries.Appointments;
 using AutoMapper;
 using Domain.Repositories;
@@ -9,7 +9,7 @@ namespace Application.Handlers.Appointments
     /// <summary>
     /// Handler for retrieving all appointments.
     /// </summary>
-    public class GetAllAppointmentsQueryHandler : IRequestHandler<GetAllAppointmentsQuery, IEnumerable<AppointmentDto>>
+    public class GetAllAppointmentsQueryHandler : IRequestHandler<GetAllAppointmentsQuery, IEnumerable<AppointmentResponseDto>>
     {
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IMapper _mapper;
@@ -20,10 +20,10 @@ namespace Application.Handlers.Appointments
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<AppointmentDto>> Handle(GetAllAppointmentsQuery request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<AppointmentResponseDto>> Handle(GetAllAppointmentsQuery request, CancellationToken cancellationToken)
         {
             var appointments = await _appointmentRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<AppointmentDto>>(appointments);
+            return _mapper.Map<IEnumerable<AppointmentResponseDto>>(appointments);
         }
     }
 }

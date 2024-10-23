@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Domain.ValueObjects;
+﻿namespace Domain.ValueObjects;
 public class DateRange
 {
     public DateTime Start { get; private set; }

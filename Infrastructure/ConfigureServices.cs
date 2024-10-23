@@ -53,6 +53,7 @@ namespace Infrastructure
             services.AddTransient<ISurgeryStaffRepository, SurgeryStaffRepository>();
             services.AddTransient<ITokenRepository, TokenRepository>();
             services.AddTransient<IUserRepository, UserRepository>();
+            services.AddTransient<IEmailSender, SmtpEmailSender>();
 
             return services;
         }

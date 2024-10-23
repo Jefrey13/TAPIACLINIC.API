@@ -1,4 +1,4 @@
-﻿using Application.Models;
+﻿using Application.Models.RequestDtos;
 using MediatR;
 
 namespace Application.Commands.Appointments
@@ -8,9 +8,9 @@ namespace Application.Commands.Appointments
     /// </summary>
     public class CreateAppointmentCommand : IRequest<int>
     {
-        public AppointmentDto AppointmentDto { get; set; }
+        public AppointmentRequestDto AppointmentDto { get; set; }
 
-        public CreateAppointmentCommand(AppointmentDto appointmentDto)
+        public CreateAppointmentCommand(AppointmentRequestDto appointmentDto)
         {
             AppointmentDto = appointmentDto;
         }

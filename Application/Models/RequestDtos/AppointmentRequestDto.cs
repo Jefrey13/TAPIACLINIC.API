@@ -1,19 +1,14 @@
-﻿namespace Application.Models
+﻿namespace Application.Models.RequestDtos
 {
     /// <summary>
     /// DTO representing the data for an Appointment.
     /// </summary>
-    public class AppointmentDto
+    public class AppointmentRequestDto
     {
-        /// <summary>
-        /// The unique identifier of the appointment.
-        /// </summary>
-        public int Id { get; set; }
-
         /// <summary>
         /// The date range for the appointment.
         /// </summary>
-        public DateRangeDto AppointmentDateRange { get; set; }
+        public DateTime Date { get; set; }
 
         /// <summary>
         /// The ID of the patient involved in the appointment.
@@ -49,14 +44,5 @@
         /// Indicates whether the appointment is active.
         /// </summary>
         public bool Active { get; set; }
-    }
-
-    /// <summary>
-    /// DTO representing a date range for an appointment.
-    /// </summary>
-    public class DateRangeDto
-    {
-        public DateTime Start { get; set; }
-        public DateTime End { get; set; }
     }
 }
