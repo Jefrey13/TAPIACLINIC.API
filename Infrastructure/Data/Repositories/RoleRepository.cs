@@ -147,5 +147,13 @@ namespace Infrastructure.Data.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+        public async Task<int?> GetRoleIdByNameAsync(string roleName)
+        {
+            var role = await _context.Roles
+                .Where(r => r.Name == roleName)
+                .FirstOrDefaultAsync();
+
+            return role?.Id;
+        }
     }
 }

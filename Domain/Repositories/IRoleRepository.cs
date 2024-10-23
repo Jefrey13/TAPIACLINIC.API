@@ -21,5 +21,7 @@ namespace Domain.Repositories
         /// <param name="permissionIds">A collection of permission IDs to assign to the role.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         Task AssignPermissionsToRole(int roleId, IEnumerable<int> permissionIds);
+
+        Task<int?> GetRoleIdByNameAsync(string roleName);
     }
 }

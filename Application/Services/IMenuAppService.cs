@@ -1,5 +1,6 @@
 ﻿using Application.Commands.Menus;
 using Application.Models;
+using Application.Models.ReponseDtos;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -15,5 +16,6 @@ namespace Application.Services
         Task DeleteMenuAsync(DeleteMenuCommand command);
         Task<IEnumerable<MenuDto>> GetAllMenusAsync();
         Task<MenuDto> GetMenuByIdAsync(int id);
+        Task<IEnumerable<MenuResponseDto>> GetMenusByRoleAsync(string jwtToken);
     }
 }

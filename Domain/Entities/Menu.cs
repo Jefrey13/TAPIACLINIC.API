@@ -34,4 +34,7 @@ public class Menu
     public ICollection<Role> Roles { get; set; }
 
     public ICollection<RoleMenu> RoleMenus { get; set; }
+
+    // Nueva propiedad para los submenús
+    public ICollection<Menu> Children { get; set; } = new List<Menu>();
 }

@@ -59,5 +59,17 @@ namespace API.Controllers
             await _menuAppService.DeleteMenuAsync(new DeleteMenuCommand(id));
             return NoContent();
         }
+
+        [HttpGet("by-role")]
+        public async Task<IActionResult> GetMenusByRole()
+        {
+            // Obtenemos el JWT del encabezado
+            var jwtToken = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            // Llamamos al servicio para obtener los menús basados en el rol
+            var menus = await _menuAppService.GetMenusByRoleAsync(jwtToken);
+
+            return Ok(menus);
+        }
     }
 }

@@ -109,6 +109,11 @@ namespace Application.Mappings
             CreateMap<Menu, MenuDto>()
                 .ReverseMap();
 
+
+            CreateMap<Menu, MenuResponseDto>()
+            .ForMember(dest => dest.Children, opt => opt.MapFrom(src => src.Children));
+
+
             // Mapeo para la entidad Permission y su DTO
             CreateMap<Permission, PermissionDto>()
                 .ReverseMap();
