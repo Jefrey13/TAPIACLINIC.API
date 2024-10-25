@@ -32,6 +32,12 @@ namespace API.Controllers
         public async Task<ActionResult<ApiResponse<IEnumerable<RoleResponseDto>>>> GetAllRoles()
         {
             var roles = await _roleAppService.GetAllRolesAsync();
+
+            if (roles == null || !roles.Any())
+            {
+                return NotFound(new ApiResponse<IEnumerable<RoleResponseDto>>(false, "No roles found", null, 404));
+            }
+
             var response = new ApiResponse<IEnumerable<RoleResponseDto>>(true, "Roles retrieved successfully", roles, 200);
             return Ok(response);
         }
@@ -44,6 +50,11 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<RoleResponseDto>>> GetRoleById(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<RoleResponseDto>(false, "Invalid role ID", null, 400));
+            }
+
             var role = await _roleAppService.GetRoleByIdAsync(id);
             if (role == null)
             {
@@ -63,7 +74,17 @@ namespace API.Controllers
         [HttpPost]
         public async Task<ActionResult<ApiResponse<int>>> CreateRole([FromBody] CreateRoleCommand command)
         {
+            if (command == null)
+            {
+                return BadRequest(new ApiResponse<int?>(false, "Role data is required", null, 400));
+            }
+
             var createdRoleId = await _roleAppService.CreateRoleAsync(command);
+            if (createdRoleId <= 0)
+            {
+                return StatusCode(500, new ApiResponse<int?>(false, "Failed to create role", null, 500));
+            }
+
             var response = new ApiResponse<int>(true, "Role created successfully", createdRoleId, 201);
             return CreatedAtAction(nameof(GetRoleById), new { id = createdRoleId }, response);
         }
@@ -77,9 +98,20 @@ namespace API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> UpdateRole(int id, [FromBody] RoleRequestDto roleDto)
         {
+            if (id <= 0 || roleDto == null)
+            {
+                return BadRequest(new ApiResponse<string>(false, "Invalid role ID or data", null, 400));
+            }
+
+            var existingRole = await _roleAppService.GetRoleByIdAsync(id);
+            if (existingRole == null)
+            {
+                return NotFound(new ApiResponse<string>(false, "Role not found", null, 404));
+            }
+
             var command = new UpdateRoleCommand(id, roleDto);
             await _roleAppService.UpdateRoleAsync(id, command);
-            var response = new ApiResponse<string>(true, "Role updated successfully", null, 204);
+            var response = new ApiResponse<string>(true, "Role updated successfully", null, 200);
             return Ok(response);
         }
 
@@ -91,6 +123,17 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> DeleteRole(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<string>(false, "Invalid role ID", null, 400));
+            }
+
+            var existingRole = await _roleAppService.GetRoleByIdAsync(id);
+            if (existingRole == null)
+            {
+                return NotFound(new ApiResponse<string>(false, "Role not found", null, 404));
+            }
+
             await _roleAppService.DeleteRoleAsync(new DeleteRoleCommand(id));
             var response = new ApiResponse<string>(true, "Role deleted successfully", null, 204);
             return Ok(response);

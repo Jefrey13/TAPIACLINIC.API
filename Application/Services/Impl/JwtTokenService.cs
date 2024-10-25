@@ -41,6 +41,9 @@ namespace Application.Services.Impl
                 signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
             );
 
+            string jwt = new JwtSecurityTokenHandler().WriteToken(token);
+            Console.WriteLine("Generated Token: " + jwt);
+
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 

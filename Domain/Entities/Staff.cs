@@ -18,7 +18,7 @@ public class Staff
     public Specialty Specialty { get; set; }
 
     [MaxLength(50)]
-    public string MinsaCode { get; set; }
+    public string? MinsaCode { get; set; }
 
     public int? YearsExperience { get; set; }
 

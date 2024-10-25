@@ -1,11 +1,11 @@
 ﻿using Application.Commands.Appointments;
 using Application.Models.RequestDtos;
+using Application.Models.ResponseDtos;
 using Application.Services;
 using API.Utils;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Application.Models.ResponseDtos;
 
 namespace API.Controllers
 {
@@ -35,6 +35,12 @@ namespace API.Controllers
         public async Task<ActionResult<ApiResponse<IEnumerable<AppointmentResponseDto>>>> GetAllAppointments()
         {
             var appointments = await _appointmentAppService.GetAllAppointmentsAsync();
+
+            if (appointments == null || !appointments.Any())
+            {
+                return NotFound(new ApiResponse<IEnumerable<AppointmentResponseDto>>(false, "No appointments found", null, 404));
+            }
+
             var response = new ApiResponse<IEnumerable<AppointmentResponseDto>>(true, "Appointments retrieved successfully", appointments, 200);
             return Ok(response);
         }
@@ -47,12 +53,17 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<AppointmentResponseDto>>> GetAppointmentById(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<AppointmentResponseDto>(false, "Invalid appointment ID", null, 400));
+            }
+
             var appointment = await _appointmentAppService.GetAppointmentByIdAsync(id);
             if (appointment == null)
             {
-                var errorResponse = new ApiResponse<AppointmentResponseDto>(false, "Appointment not found", null, 404);
-                return NotFound(errorResponse);
+                return NotFound(new ApiResponse<AppointmentResponseDto>(false, "Appointment not found", null, 404));
             }
+
             var response = new ApiResponse<AppointmentResponseDto>(true, "Appointment retrieved successfully", appointment, 200);
             return Ok(response);
         }
@@ -63,11 +74,17 @@ namespace API.Controllers
         /// <param name="command">The command containing appointment details.</param>
         /// <returns>The ID of the newly created appointment.</returns>
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<int>>> CreateAppointment([FromBody] CreateAppointmentCommand command)
+        public async Task<ActionResult<ApiResponse<int?>>> CreateAppointment([FromBody] CreateAppointmentCommand command)
         {
+            if (command == null)
+            {
+                return BadRequest(new ApiResponse<int?>(false, "Appointment data is required", null, 400));
+            }
+
             var jwtToken = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
             var createdAppointmentId = await _appointmentAppService.CreateAppointmentAsync(command, jwtToken);
-            var response = new ApiResponse<int>(true, "Appointment created successfully", createdAppointmentId, 201);
+            var response = new ApiResponse<int?>(true, "Appointment created successfully", createdAppointmentId, 201);
+
             return CreatedAtAction(nameof(GetAppointmentById), new { id = createdAppointmentId }, response);
         }
 
@@ -80,15 +97,14 @@ namespace API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> UpdateAppointment(int id, [FromBody] UpdateAppointmentCommand command)
         {
-            if (id != command.Id)
+            if (id <= 0 || command == null)
             {
-                var errorResponse = new ApiResponse<string>(false, "Appointment ID mismatch", null, 400);
-                return BadRequest(errorResponse);
+                return BadRequest(new ApiResponse<string>(false, "Invalid appointment ID or data", null, 400));
             }
 
             var jwtToken = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
             await _appointmentAppService.UpdateAppointmentAsync(command, jwtToken);
-            var response = new ApiResponse<string>(true, "Appointment updated successfully", null, 204);
+            var response = new ApiResponse<string>(true, "Appointment updated successfully", null, 200);
             return Ok(response);
         }
 
@@ -100,6 +116,17 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> DeleteAppointment(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<string>(false, "Invalid appointment ID", null, 400));
+            }
+
+            var appointment = await _appointmentAppService.GetAppointmentByIdAsync(id);
+            if (appointment == null)
+            {
+                return NotFound(new ApiResponse<string>(false, "Appointment not found", null, 404));
+            }
+
             await _appointmentAppService.DeleteAppointmentAsync(new DeleteAppointmentCommand(id));
             var response = new ApiResponse<string>(true, "Appointment deleted successfully", null, 204);
             return Ok(response);

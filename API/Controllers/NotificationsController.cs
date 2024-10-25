@@ -4,6 +4,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using API.Utils;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace API.Controllers
 {
@@ -47,19 +48,30 @@ namespace API.Controllers
                         g => string.Join(", ", g.Select(e => e.ErrorMessage))
                     );
 
-                var errorResponse = new ApiResponse<string>(false, "Validation failed", null, 400)
+                var errorResponse = new ApiResponse<string>(false, "Validation failed for email request.", null, 400)
                 {
                     Errors = errors
                 };
                 return BadRequest(errorResponse);
             }
 
-            // Send the email using the email service
-            await _emailSender.SendEmailAsync(emailRequestDto.To, emailRequestDto.Subject, emailRequestDto.Body);
+            try
+            {
+                // Send the email using the email service
+                await _emailSender.SendEmailAsync(emailRequestDto.To, emailRequestDto.Subject, emailRequestDto.Body);
 
-            var response = new ApiResponse<string>(true, "Email sent successfully", null, 200);
-            return Ok(response);
+                var response = new ApiResponse<string>(true, "Email sent successfully.", null, 200);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception or handle specific exceptions as needed
+                var errorResponse = new ApiResponse<string>(false, "An error occurred while sending the email.", null, 500)
+                {
+                    Errors = new Dictionary<string, string> { { "Exception", ex.Message } }
+                };
+                return StatusCode(500, errorResponse);
+            }
         }
-
     }
 }

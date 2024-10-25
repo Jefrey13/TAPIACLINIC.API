@@ -31,6 +31,12 @@ namespace API.Controllers
         public async Task<ActionResult<ApiResponse<IEnumerable<MedicalRecordResponseDto>>>> GetAllMedicalRecords()
         {
             var records = await _medicalRecordAppService.GetAllMedicalRecordsAsync();
+
+            if (records == null || !records.Any())
+            {
+                return NotFound(new ApiResponse<IEnumerable<MedicalRecordResponseDto>>(false, "No medical records found", null, 404));
+            }
+
             var response = new ApiResponse<IEnumerable<MedicalRecordResponseDto>>(true, "Medical records retrieved successfully", records, 200);
             return Ok(response);
         }
@@ -43,12 +49,17 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<MedicalRecordResponseDto>>> GetMedicalRecordById(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<MedicalRecordResponseDto>(false, "Invalid medical record ID", null, 400));
+            }
+
             var record = await _medicalRecordAppService.GetMedicalRecordByIdAsync(id);
             if (record == null)
             {
-                var errorResponse = new ApiResponse<MedicalRecordResponseDto>(false, "Medical record not found", null, 404);
-                return NotFound(errorResponse);
+                return NotFound(new ApiResponse<MedicalRecordResponseDto>(false, "Medical record not found", null, 404));
             }
+
             var response = new ApiResponse<MedicalRecordResponseDto>(true, "Medical record retrieved successfully", record, 200);
             return Ok(response);
         }
@@ -61,12 +72,17 @@ namespace API.Controllers
         [HttpGet("patient/{patientId}")]
         public async Task<ActionResult<ApiResponse<MedicalRecordResponseDto>>> GetMedicalRecordByPatientId(int patientId)
         {
+            if (patientId <= 0)
+            {
+                return BadRequest(new ApiResponse<MedicalRecordResponseDto>(false, "Invalid patient ID", null, 400));
+            }
+
             var record = await _medicalRecordAppService.GetMedicalRecordByPatientIdAsync(patientId);
             if (record == null)
             {
-                var errorResponse = new ApiResponse<MedicalRecordResponseDto>(false, "Medical record not found for the patient", null, 404);
-                return NotFound(errorResponse);
+                return NotFound(new ApiResponse<MedicalRecordResponseDto>(false, "Medical record not found for the patient", null, 404));
             }
+
             var response = new ApiResponse<MedicalRecordResponseDto>(true, "Medical record for patient retrieved successfully", record, 200);
             return Ok(response);
         }
@@ -79,6 +95,11 @@ namespace API.Controllers
         [HttpPost]
         public async Task<ActionResult<ApiResponse<int>>> CreateMedicalRecord([FromBody] CreateMedicalRecordCommand command)
         {
+            if (command == null)
+            {
+                return BadRequest(new ApiResponse<int>(false, "Medical record data is required", default, 400));
+            }
+
             var recordId = await _medicalRecordAppService.CreateMedicalRecordAsync(command);
             var response = new ApiResponse<int>(true, "Medical record created successfully", recordId, 201);
             return CreatedAtAction(nameof(GetMedicalRecordById), new { id = recordId }, response);
@@ -93,14 +114,13 @@ namespace API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> UpdateMedicalRecord(int id, [FromBody] UpdateMedicalRecordCommand command)
         {
-            if (id != command.Id)
+            if (id <= 0 || command == null)
             {
-                var errorResponse = new ApiResponse<string>(false, "Record ID mismatch.", null, 400);
-                return BadRequest(errorResponse);
+                return BadRequest(new ApiResponse<string>(false, "Invalid medical record ID or data", null, 400));
             }
 
             await _medicalRecordAppService.UpdateMedicalRecordAsync(command);
-            var response = new ApiResponse<string>(true, "Medical record updated successfully", null, 204);
+            var response = new ApiResponse<string>(true, "Medical record updated successfully", null, 200);
             return Ok(response);
         }
 
@@ -112,6 +132,17 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> DeleteMedicalRecord(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<string>(false, "Invalid medical record ID", null, 400));
+            }
+
+            var record = await _medicalRecordAppService.GetMedicalRecordByIdAsync(id);
+            if (record == null)
+            {
+                return NotFound(new ApiResponse<string>(false, "Medical record not found", null, 404));
+            }
+
             await _medicalRecordAppService.DeleteMedicalRecordAsync(id);
             var response = new ApiResponse<string>(true, "Medical record deleted successfully", null, 204);
             return Ok(response);

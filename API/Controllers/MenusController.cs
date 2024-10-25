@@ -29,6 +29,11 @@ namespace API.Controllers
         [HttpPost]
         public async Task<ActionResult<ApiResponse<int>>> CreateMenu([FromBody] CreateMenuCommand command)
         {
+            if (command == null)
+            {
+                return BadRequest(new ApiResponse<int>(false, "Menu data is required", default, 400));
+            }
+
             var createdMenuId = await _menuAppService.CreateMenuAsync(command);
             var response = new ApiResponse<int>(true, "Menu created successfully", createdMenuId, 201);
             return CreatedAtAction(nameof(GetMenuById), new { id = createdMenuId }, response);
@@ -42,12 +47,17 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<MenuDto>>> GetMenuById(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<MenuDto>(false, "Invalid menu ID", null, 400));
+            }
+
             var menu = await _menuAppService.GetMenuByIdAsync(id);
             if (menu == null)
             {
-                var errorResponse = new ApiResponse<MenuDto>(false, "Menu not found", null, 404);
-                return NotFound(errorResponse);
+                return NotFound(new ApiResponse<MenuDto>(false, "Menu not found", null, 404));
             }
+
             var response = new ApiResponse<MenuDto>(true, "Menu retrieved successfully", menu, 200);
             return Ok(response);
         }
@@ -60,6 +70,11 @@ namespace API.Controllers
         public async Task<ActionResult<ApiResponse<IEnumerable<MenuDto>>>> GetAllMenus()
         {
             var menus = await _menuAppService.GetAllMenusAsync();
+            if (menus == null || !menus.Any())
+            {
+                return NotFound(new ApiResponse<IEnumerable<MenuDto>>(false, "No menus found", null, 404));
+            }
+
             var response = new ApiResponse<IEnumerable<MenuDto>>(true, "Menus retrieved successfully", menus, 200);
             return Ok(response);
         }
@@ -73,14 +88,13 @@ namespace API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> UpdateMenu(int id, [FromBody] UpdateMenuCommand command)
         {
-            if (id != command.Id)
+            if (id <= 0 || command == null)
             {
-                var errorResponse = new ApiResponse<string>(false, "Menu ID mismatch", null, 400);
-                return BadRequest(errorResponse);
+                return BadRequest(new ApiResponse<string>(false, "Invalid menu ID or data", null, 400));
             }
 
             await _menuAppService.UpdateMenuAsync(command);
-            var response = new ApiResponse<string>(true, "Menu updated successfully", null, 204);
+            var response = new ApiResponse<string>(true, "Menu updated successfully", null, 200);
             return Ok(response);
         }
 
@@ -92,6 +106,17 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> DeleteMenu(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<string>(false, "Invalid menu ID", null, 400));
+            }
+
+            var menu = await _menuAppService.GetMenuByIdAsync(id);
+            if (menu == null)
+            {
+                return NotFound(new ApiResponse<string>(false, "Menu not found", null, 404));
+            }
+
             await _menuAppService.DeleteMenuAsync(new DeleteMenuCommand(id));
             var response = new ApiResponse<string>(true, "Menu deleted successfully", null, 204);
             return Ok(response);
@@ -107,8 +132,17 @@ namespace API.Controllers
             // Get JWT from the Authorization header
             var jwtToken = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
-            // Call the service to get menus based on the user's role
+            if (string.IsNullOrEmpty(jwtToken))
+            {
+                return Unauthorized(new ApiResponse<IEnumerable<MenuResponseDto>>(false, "Authorization token is missing", null, 401));
+            }
+
             var menus = await _menuAppService.GetMenusByRoleAsync(jwtToken);
+            if (menus == null || !menus.Any())
+            {
+                return NotFound(new ApiResponse<IEnumerable<MenuResponseDto>>(false, "No menus found for this role", null, 404));
+            }
+
             var response = new ApiResponse<IEnumerable<MenuResponseDto>>(true, "Menus retrieved based on role successfully", menus, 200);
             return Ok(response);
         }

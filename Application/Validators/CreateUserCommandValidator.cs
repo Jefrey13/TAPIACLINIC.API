@@ -1,5 +1,7 @@
 ﻿using Application.Commands.Users;
 using FluentValidation;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Numerics;
 
 namespace Application.Validators
 {
@@ -35,10 +37,11 @@ namespace Application.Validators
                 .NotEmpty().WithMessage("Password is required.")
                 .MinimumLength(6).WithMessage("Password must be at least 6 characters long.");
 
-            // Phone Address validation
+            // Phone validation
             RuleFor(x => x.UserDto.PhoneAddress)
-                .NotEmpty().WithMessage("Phone number is required.")
-                .MaximumLength(15).WithMessage("Phone number must not exceed 15 characters.");
+                .NotEmpty().WithMessage("El número de teléfono es obligatorio.")
+                .Length(8).WithMessage("El número de teléfono debe contener exactamente 8 dígitos.")
+                .Matches(@"^\d{8}$").WithMessage("El número de teléfono debe contener solo dígitos, sin espacios ni caracteres especiales.");
 
             // Gender validation
             RuleFor(x => x.UserDto.Gender)

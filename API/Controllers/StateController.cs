@@ -27,6 +27,12 @@ namespace API.Controllers
         public async Task<ActionResult<ApiResponse<IEnumerable<StateDto>>>> GetAllStates()
         {
             var states = await _stateAppService.GetAllStatesAsync();
+
+            if (states == null || !states.Any())
+            {
+                return NotFound(new ApiResponse<IEnumerable<StateDto>>(false, "No states found", null, 404));
+            }
+
             var response = new ApiResponse<IEnumerable<StateDto>>(true, "States retrieved successfully", states, 200);
             return Ok(response);
         }
@@ -39,11 +45,15 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<StateDto>>> GetStateById(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<StateDto>(false, "Invalid state ID", null, 400));
+            }
+
             var state = await _stateAppService.GetStateByIdAsync(id);
             if (state == null)
             {
-                var errorResponse = new ApiResponse<StateDto>(false, "State not found", null, 404);
-                return NotFound(errorResponse);
+                return NotFound(new ApiResponse<StateDto>(false, "State not found", null, 404));
             }
 
             var response = new ApiResponse<StateDto>(true, "State retrieved successfully", state, 200);
@@ -58,6 +68,11 @@ namespace API.Controllers
         [HttpPost]
         public async Task<ActionResult<ApiResponse<int>>> CreateState([FromBody] CreateStateCommand command)
         {
+            if (command == null)
+            {
+                return BadRequest(new ApiResponse<int?>(false, "State data is required", null, 400));
+            }
+
             var createdStateId = await _stateAppService.CreateStateAsync(command);
             var response = new ApiResponse<int>(true, "State created successfully", createdStateId, 201);
             return CreatedAtAction(nameof(GetStateById), new { id = createdStateId }, response);
@@ -72,14 +87,19 @@ namespace API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> UpdateState(int id, [FromBody] UpdateStateCommand command)
         {
-            if (id != command.Id)
+            if (id <= 0 || command == null)
             {
-                var errorResponse = new ApiResponse<string>(false, "State ID mismatch", null, 400);
-                return BadRequest(errorResponse);
+                return BadRequest(new ApiResponse<string>(false, "Invalid state ID or data", null, 400));
+            }
+
+            var existingState = await _stateAppService.GetStateByIdAsync(id);
+            if (existingState == null)
+            {
+                return NotFound(new ApiResponse<string>(false, "State not found", null, 404));
             }
 
             await _stateAppService.UpdateStateAsync(command);
-            var response = new ApiResponse<string>(true, "State updated successfully", null, 204);
+            var response = new ApiResponse<string>(true, "State updated successfully", null, 200);
             return Ok(response);
         }
 
@@ -91,6 +111,17 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> DeleteState(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<string>(false, "Invalid state ID", null, 400));
+            }
+
+            var existingState = await _stateAppService.GetStateByIdAsync(id);
+            if (existingState == null)
+            {
+                return NotFound(new ApiResponse<string>(false, "State not found", null, 404));
+            }
+
             await _stateAppService.DeleteStateAsync(new DeleteStateCommand(id));
             var response = new ApiResponse<string>(true, "State deleted successfully", null, 204);
             return Ok(response);

@@ -27,6 +27,12 @@ namespace API.Controllers
         public async Task<ActionResult<ApiResponse<IEnumerable<SurgeryDto>>>> GetAllSurgeries()
         {
             var surgeries = await _surgeryAppService.GetAllSurgeriesAsync();
+
+            if (surgeries == null || !surgeries.Any())
+            {
+                return NotFound(new ApiResponse<IEnumerable<SurgeryDto>>(false, "No surgeries found", null, 404));
+            }
+
             var response = new ApiResponse<IEnumerable<SurgeryDto>>(true, "Surgeries retrieved successfully", surgeries, 200);
             return Ok(response);
         }
@@ -39,12 +45,17 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<SurgeryDto>>> GetSurgeryById(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<SurgeryDto>(false, "Invalid surgery ID", null, 400));
+            }
+
             var surgery = await _surgeryAppService.GetSurgeryByIdAsync(id);
             if (surgery == null)
             {
-                var errorResponse = new ApiResponse<SurgeryDto>(false, "Surgery not found", null, 404);
-                return NotFound(errorResponse);
+                return NotFound(new ApiResponse<SurgeryDto>(false, "Surgery not found", null, 404));
             }
+
             var response = new ApiResponse<SurgeryDto>(true, "Surgery retrieved successfully", surgery, 200);
             return Ok(response);
         }
@@ -57,6 +68,11 @@ namespace API.Controllers
         [HttpPost]
         public async Task<ActionResult<ApiResponse<int>>> CreateSurgery([FromBody] SurgeryDto surgeryDto)
         {
+            if (surgeryDto == null)
+            {
+                return BadRequest(new ApiResponse<int?>(false, "Surgery data is required", null, 400));
+            }
+
             var createdSurgeryId = await _surgeryAppService.CreateSurgeryAsync(new CreateSurgeryCommand(surgeryDto));
             var response = new ApiResponse<int>(true, "Surgery created successfully", createdSurgeryId, 201);
             return CreatedAtAction(nameof(GetSurgeryById), new { id = createdSurgeryId }, response);
@@ -71,14 +87,25 @@ namespace API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> UpdateSurgery(int id, [FromBody] SurgeryDto surgeryDto)
         {
+            if (id <= 0 || surgeryDto == null)
+            {
+                return BadRequest(new ApiResponse<string>(false, "Invalid surgery ID or data", null, 400));
+            }
+
             if (id != surgeryDto.Id)
             {
                 var errorResponse = new ApiResponse<string>(false, "Surgery ID mismatch", null, 400);
                 return BadRequest(errorResponse);
             }
 
+            var existingSurgery = await _surgeryAppService.GetSurgeryByIdAsync(id);
+            if (existingSurgery == null)
+            {
+                return NotFound(new ApiResponse<string>(false, "Surgery not found", null, 404));
+            }
+
             await _surgeryAppService.UpdateSurgeryAsync(new UpdateSurgeryCommand(id, surgeryDto));
-            var response = new ApiResponse<string>(true, "Surgery updated successfully", null, 204);
+            var response = new ApiResponse<string>(true, "Surgery updated successfully", null, 200);
             return Ok(response);
         }
 
@@ -90,6 +117,17 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> DeleteSurgery(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<string>(false, "Invalid surgery ID", null, 400));
+            }
+
+            var existingSurgery = await _surgeryAppService.GetSurgeryByIdAsync(id);
+            if (existingSurgery == null)
+            {
+                return NotFound(new ApiResponse<string>(false, "Surgery not found", null, 404));
+            }
+
             await _surgeryAppService.DeleteSurgeryAsync(id);
             var response = new ApiResponse<string>(true, "Surgery deleted successfully", null, 204);
             return Ok(response);

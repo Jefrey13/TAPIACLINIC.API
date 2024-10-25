@@ -27,6 +27,12 @@ namespace API.Controllers
         public async Task<ActionResult<ApiResponse<IEnumerable<SpecialtyDto>>>> GetAllSpecialties()
         {
             var specialties = await _specialtyAppService.GetAllSpecialtiesAsync();
+
+            if (specialties == null || !specialties.Any())
+            {
+                return NotFound(new ApiResponse<IEnumerable<SpecialtyDto>>(false, "No specialties found", null, 404));
+            }
+
             var response = new ApiResponse<IEnumerable<SpecialtyDto>>(true, "Specialties retrieved successfully", specialties, 200);
             return Ok(response);
         }
@@ -39,11 +45,15 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<SpecialtyDto>>> GetSpecialtyById(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<SpecialtyDto>(false, "Invalid specialty ID", null, 400));
+            }
+
             var specialty = await _specialtyAppService.GetSpecialtyByIdAsync(id);
             if (specialty == null)
             {
-                var errorResponse = new ApiResponse<SpecialtyDto>(false, "Specialty not found", null, 404);
-                return NotFound(errorResponse);
+                return NotFound(new ApiResponse<SpecialtyDto>(false, "Specialty not found", null, 404));
             }
 
             var response = new ApiResponse<SpecialtyDto>(true, "Specialty retrieved successfully", specialty, 200);
@@ -58,6 +68,11 @@ namespace API.Controllers
         [HttpPost]
         public async Task<ActionResult<ApiResponse<int>>> CreateSpecialty([FromBody] SpecialtyDto specialtyDto)
         {
+            if (specialtyDto == null)
+            {
+                return BadRequest(new ApiResponse<int?>(false, "Specialty data is required", null, 400));
+            }
+
             var createdSpecialtyId = await _specialtyAppService.CreateSpecialtyAsync(new CreateSpecialtyCommand(specialtyDto));
             var response = new ApiResponse<int>(true, "Specialty created successfully", createdSpecialtyId, 201);
             return CreatedAtAction(nameof(GetSpecialtyById), new { id = createdSpecialtyId }, response);
@@ -72,14 +87,19 @@ namespace API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> UpdateSpecialty(int id, [FromBody] SpecialtyDto specialtyDto)
         {
-            if (id != specialtyDto.Id)
+            if (id <= 0 || specialtyDto == null)
             {
-                var errorResponse = new ApiResponse<string>(false, "Specialty ID mismatch", null, 400);
-                return BadRequest(errorResponse);
+                return BadRequest(new ApiResponse<string>(false, "Invalid ID or specialty data", null, 400));
+            }
+
+            var existingSpecialty = await _specialtyAppService.GetSpecialtyByIdAsync(id);
+            if (existingSpecialty == null)
+            {
+                return NotFound(new ApiResponse<string>(false, "Specialty not found", null, 404));
             }
 
             await _specialtyAppService.UpdateSpecialtyAsync(new UpdateSpecialtyCommand(id, specialtyDto));
-            var response = new ApiResponse<string>(true, "Specialty updated successfully", null, 204);
+            var response = new ApiResponse<string>(true, "Specialty updated successfully", null, 200);
             return Ok(response);
         }
 
@@ -91,6 +111,17 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> DeleteSpecialty(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<string>(false, "Invalid specialty ID", null, 400));
+            }
+
+            var existingSpecialty = await _specialtyAppService.GetSpecialtyByIdAsync(id);
+            if (existingSpecialty == null)
+            {
+                return NotFound(new ApiResponse<string>(false, "Specialty not found", null, 404));
+            }
+
             await _specialtyAppService.DeleteSpecialtyAsync(id);
             var response = new ApiResponse<string>(true, "Specialty deleted successfully", null, 204);
             return Ok(response);

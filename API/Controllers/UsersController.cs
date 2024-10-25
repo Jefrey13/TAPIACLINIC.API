@@ -6,6 +6,7 @@ using API.Utils;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers
 {
@@ -61,6 +62,7 @@ namespace API.Controllers
         /// <param name="userDto">The UserRequestDto containing the new user's details.</param>
         /// <returns>The ID of the newly created user.</returns>
         [HttpPost]
+        [AllowAnonymous]
         public async Task<ActionResult<ApiResponse<int>>> CreateUser([FromBody] UserRequestDto userDto)
         {
             var createdUserId = await _userAppService.CreateUserAsync(new CreateUserCommand(userDto));

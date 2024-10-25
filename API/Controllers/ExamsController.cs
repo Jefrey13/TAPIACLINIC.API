@@ -6,6 +6,7 @@ using API.Utils;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers
 {
@@ -23,11 +24,16 @@ namespace API.Controllers
         /// <summary>
         /// Retrieves all the exams in the system.
         /// </summary>
-        /// <returns>A list of ExamDto containing details of all exams.</returns>
         [HttpGet]
         public async Task<ActionResult<ApiResponse<IEnumerable<ExamDto>>>> GetAllExams()
         {
             var exams = await _examAppService.GetAllExamsAsync();
+
+            if (exams == null || !exams.Any())
+            {
+                return NotFound(new ApiResponse<IEnumerable<ExamDto>>(false, "No exams found", null, 404));
+            }
+
             var response = new ApiResponse<IEnumerable<ExamDto>>(true, "Exams retrieved successfully", exams, 200);
             return Ok(response);
         }
@@ -35,17 +41,20 @@ namespace API.Controllers
         /// <summary>
         /// Retrieves a specific exam by its ID.
         /// </summary>
-        /// <param name="id">The ID of the exam to retrieve.</param>
-        /// <returns>The ExamDto of the requested exam, or 404 if not found.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<ExamDto>>> GetExamById(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<ExamDto>(false, "Invalid exam ID", null, 400));
+            }
+
             var exam = await _examAppService.GetExamByIdAsync(id);
             if (exam == null)
             {
-                var errorResponse = new ApiResponse<ExamDto>(false, "Exam not found", null, 404);
-                return NotFound(errorResponse);
+                return NotFound(new ApiResponse<ExamDto>(false, "Exam not found", null, 404));
             }
+
             var response = new ApiResponse<ExamDto>(true, "Exam retrieved successfully", exam, 200);
             return Ok(response);
         }
@@ -53,44 +62,59 @@ namespace API.Controllers
         /// <summary>
         /// Creates a new exam.
         /// </summary>
-        /// <param name="examDto">The details of the exam to be created.</param>
-        /// <returns>The ID of the newly created exam.</returns>
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<int>>> CreateExam([FromBody] ExamDto examDto)
+        public async Task<ActionResult<ApiResponse<int?>>> CreateExam([FromBody] ExamDto examDto)
         {
+            if (examDto == null)
+            {
+                return BadRequest(new ApiResponse<int?>(false, "Exam data is required", null, 400));
+            }
+
             var createdExamId = await _examAppService.CreateExamAsync(new CreateExamCommand(examDto));
-            var response = new ApiResponse<int>(true, "Exam created successfully", createdExamId, 201);
+            var response = new ApiResponse<int?>(true, "Exam created successfully", createdExamId, 201);
+
             return CreatedAtAction(nameof(GetExamById), new { id = createdExamId }, response);
         }
 
         /// <summary>
         /// Updates an existing exam.
         /// </summary>
-        /// <param name="id">The ID of the exam to update.</param>
-        /// <param name="examDto">The updated details of the exam.</param>
-        /// <returns>Confirmation that the update was successful.</returns>
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> UpdateExam(int id, [FromBody] ExamDto examDto)
         {
-            if (id != examDto.Id)
+            if (id <= 0 || examDto == null)
             {
-                var errorResponse = new ApiResponse<string>(false, "Exam ID in the request does not match the one in the body.", null, 400);
-                return BadRequest(errorResponse);
+                return BadRequest(new ApiResponse<string>(false, "Invalid exam ID or data", null, 400));
+            }
+
+            var existingExam = await _examAppService.GetExamByIdAsync(id);
+            if (existingExam == null)
+            {
+                return NotFound(new ApiResponse<string>(false, "Exam not found", null, 404));
             }
 
             await _examAppService.UpdateExamAsync(new UpdateExamCommand(id, examDto));
-            var response = new ApiResponse<string>(true, "Exam updated successfully", null, 204);
+            var response = new ApiResponse<string>(true, "Exam updated successfully", null, 200);
             return Ok(response);
         }
 
         /// <summary>
         /// Deletes an exam by its ID.
         /// </summary>
-        /// <param name="id">The ID of the exam to delete.</param>
-        /// <returns>Confirmation that the deletion was successful.</returns>
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> DeleteExam(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<string>(false, "Invalid exam ID", null, 400));
+            }
+
+            var exam = await _examAppService.GetExamByIdAsync(id);
+            if (exam == null)
+            {
+                return NotFound(new ApiResponse<string>(false, "Exam not found", null, 404));
+            }
+
             await _examAppService.DeleteExamAsync(id);
             var response = new ApiResponse<string>(true, "Exam deleted successfully", null, 204);
             return Ok(response);

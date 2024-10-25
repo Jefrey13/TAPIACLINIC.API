@@ -1,5 +1,4 @@
-﻿using Application.Commands;
-using Application.Commands.Schedules;
+﻿using Application.Commands.Schedules;
 using Application.Models.ReponseDtos;
 using Application.Models.RequestDtos;
 using Application.Services;
@@ -29,6 +28,12 @@ namespace API.Controllers
         public async Task<ActionResult<ApiResponse<IEnumerable<ScheduleResponseDto>>>> GetAllSchedules()
         {
             var schedules = await _scheduleAppService.GetAllSchedulesAsync();
+
+            if (schedules == null || !schedules.Any())
+            {
+                return NotFound(new ApiResponse<IEnumerable<ScheduleResponseDto>>(false, "No schedules found", null, 404));
+            }
+
             var response = new ApiResponse<IEnumerable<ScheduleResponseDto>>(true, "Schedules retrieved successfully", schedules, 200);
             return Ok(response);
         }
@@ -41,12 +46,17 @@ namespace API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<ScheduleResponseDto>>> GetScheduleById(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<ScheduleResponseDto>(false, "Invalid schedule ID", null, 400));
+            }
+
             var schedule = await _scheduleAppService.GetScheduleByIdAsync(id);
             if (schedule == null)
             {
-                var errorResponse = new ApiResponse<ScheduleResponseDto>(false, "Schedule not found", null, 404);
-                return NotFound(errorResponse);
+                return NotFound(new ApiResponse<ScheduleResponseDto>(false, "Schedule not found", null, 404));
             }
+
             var response = new ApiResponse<ScheduleResponseDto>(true, "Schedule retrieved successfully", schedule, 200);
             return Ok(response);
         }
@@ -59,6 +69,11 @@ namespace API.Controllers
         [HttpPost]
         public async Task<ActionResult<ApiResponse<int>>> CreateSchedule([FromBody] ScheduleResquestDto scheduleDto)
         {
+            if (scheduleDto == null)
+            {
+                return BadRequest(new ApiResponse<int?>(false, "Schedule data is required", null, 400));
+            }
+
             var createdScheduleId = await _scheduleAppService.CreateScheduleAsync(new CreateScheduleCommand(scheduleDto));
             var response = new ApiResponse<int>(true, "Schedule created successfully", createdScheduleId, 201);
             return CreatedAtAction(nameof(GetScheduleById), new { id = createdScheduleId }, response);
@@ -73,19 +88,21 @@ namespace API.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> UpdateSchedule(int id, [FromBody] ScheduleResquestDto scheduleDto)
         {
-            // Validación para verificar que el ID no sea cero o negativo
-            if (id <= 0)
+            if (id <= 0 || scheduleDto == null)
             {
-                var errorResponse = new ApiResponse<string>(false, "Invalid ID", null, 400);
-                return BadRequest(errorResponse);
+                return BadRequest(new ApiResponse<string>(false, "Invalid schedule ID or data", null, 400));
             }
 
-            // Si el ID es válido, proceder con la actualización
+            var existingSchedule = await _scheduleAppService.GetScheduleByIdAsync(id);
+            if (existingSchedule == null)
+            {
+                return NotFound(new ApiResponse<string>(false, "Schedule not found", null, 404));
+            }
+
             await _scheduleAppService.UpdateScheduleAsync(new UpdateScheduleCommand(id, scheduleDto));
-            var response = new ApiResponse<string>(true, "Schedule updated successfully", null, 204);
+            var response = new ApiResponse<string>(true, "Schedule updated successfully", null, 200);
             return Ok(response);
         }
-
 
         /// <summary>
         /// Deletes a schedule by its ID.
@@ -95,6 +112,17 @@ namespace API.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> DeleteSchedule(int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest(new ApiResponse<string>(false, "Invalid schedule ID", null, 400));
+            }
+
+            var existingSchedule = await _scheduleAppService.GetScheduleByIdAsync(id);
+            if (existingSchedule == null)
+            {
+                return NotFound(new ApiResponse<string>(false, "Schedule not found", null, 404));
+            }
+
             await _scheduleAppService.DeleteScheduleAsync(id);
             var response = new ApiResponse<string>(true, "Schedule deleted successfully", null, 204);
             return Ok(response);
@@ -108,7 +136,17 @@ namespace API.Controllers
         [HttpGet("by-specialty/{specialtyId}")]
         public async Task<ActionResult<ApiResponse<IEnumerable<ScheduleResponseDto>>>> GetSchedulesBySpecialty(int specialtyId)
         {
+            if (specialtyId <= 0)
+            {
+                return BadRequest(new ApiResponse<IEnumerable<ScheduleResponseDto>>(false, "Invalid specialty ID", null, 400));
+            }
+
             var schedules = await _scheduleAppService.GetSchedulesBySpecialtyAsync(specialtyId);
+            if (schedules == null || !schedules.Any())
+            {
+                return NotFound(new ApiResponse<IEnumerable<ScheduleResponseDto>>(false, "No schedules found for this specialty", null, 404));
+            }
+
             var response = new ApiResponse<IEnumerable<ScheduleResponseDto>>(true, "Schedules by specialty retrieved successfully", schedules, 200);
             return Ok(response);
         }
