@@ -131,5 +131,29 @@ namespace API.Controllers
             var response = new ApiResponse<string>(true, "Appointment deleted successfully", null, 204);
             return Ok(response);
         }
+
+        /// <summary>
+        /// Retrieves appointments by state name.
+        /// </summary>
+        /// <param name="stateName">The name of the state (e.g., "Scheduled", "Completed").</param>
+        /// <returns>A list of appointments in the specified state.</returns>
+        [HttpGet("by-state/{stateName}")]
+        public async Task<ActionResult<ApiResponse<IEnumerable<AppointmentResponseDto>>>> GetAppointmentsByState(string stateName)
+        {
+            if (string.IsNullOrWhiteSpace(stateName))
+            {
+                return BadRequest(new ApiResponse<IEnumerable<AppointmentResponseDto>>(false, "Invalid state name", null, 400));
+            }
+
+            var appointments = await _appointmentAppService.GetAppointmentsByStateAsync(stateName);
+
+            if (appointments == null || !appointments.Any())
+            {
+                return NotFound(new ApiResponse<IEnumerable<AppointmentResponseDto>>(false, "No appointments found for the specified state", null, 404));
+            }
+
+            var response = new ApiResponse<IEnumerable<AppointmentResponseDto>>(true, "Appointments retrieved by state successfully", appointments, 200);
+            return Ok(response);
+        }
     }
 }

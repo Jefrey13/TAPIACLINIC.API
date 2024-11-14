@@ -76,5 +76,18 @@ namespace Infrastructure.Data.Repositories
                 await _context.SaveChangesAsync();
             }
         }
+
+        /// <summary>
+        /// Retrieves users who have the "Paciente" role and a specified state.
+        /// </summary>
+        /// <param name="stateId">The ID of the desired state (e.g., active, inactive).</param>
+        /// <returns>A list of users with the "Paciente" role in the specified state.</returns>
+        public async Task<IEnumerable<User>> GetByStateAsync(int stateId)
+        {
+            return await _context.Users
+                .Where(user => user.StateId == stateId && user.Role.Name == "Paciente")
+                .AsNoTracking()  // Optimize for read-only data by disabling tracking
+                .ToListAsync();
+        }
     }
 }

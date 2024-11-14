@@ -44,5 +44,7 @@ namespace Application.Services
         /// <param name="id">The ID of the appointment to retrieve.</param>
         /// <returns>The appointment DTO.</returns>
         Task<AppointmentResponseDto> GetAppointmentByIdAsync(int id);
+
+        Task<IEnumerable<AppointmentResponseDto>> GetAppointmentsByStateAsync(string stateName);
     }
 }

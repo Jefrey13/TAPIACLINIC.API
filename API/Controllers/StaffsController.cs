@@ -184,5 +184,28 @@ namespace API.Controllers
             var response = new ApiResponse<string>(true, "Staff deleted successfully", null, 204);
             return Ok(response);
         }
+        /// <summary>
+        /// Retrieves all staff members with the specified state ID.
+        /// </summary>
+        /// <param name="stateId">The State ID of the staff members to retrieve.</param>
+        /// <returns>A list of StaffResponseDto objects representing staff members in the specified state.</returns>
+        [HttpGet("by-state/{stateId}")]
+        public async Task<ActionResult<ApiResponse<IEnumerable<StaffResponseDto>>>> GetStaffByState(int stateId)
+        {
+            if (stateId <= 0)
+            {
+                return BadRequest(new ApiResponse<IEnumerable<StaffResponseDto>>(false, "Invalid state ID", null, 400));
+            }
+
+            var staffs = await _staffAppService.GetStaffByStateAsync(stateId);
+
+            if (staffs == null || !staffs.Any())
+            {
+                return NotFound(new ApiResponse<IEnumerable<StaffResponseDto>>(false, "No staff members found for the specified state", null, 404));
+            }
+
+            var response = new ApiResponse<IEnumerable<StaffResponseDto>>(true, "Staff members retrieved by state successfully", staffs, 200);
+            return Ok(response);
+        }
     }
 }

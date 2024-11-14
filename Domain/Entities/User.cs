@@ -45,8 +45,6 @@ public class User
     [MaxLength(20)]
     public string IdCard { get; set; }
 
-    public bool Active { get; set; } = true;
-
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public DateTime UpdatedAt { get; set; } = DateTime.Now;

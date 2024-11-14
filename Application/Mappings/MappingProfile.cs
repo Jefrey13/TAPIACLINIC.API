@@ -32,8 +32,7 @@ namespace Application.Mappings
                 .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.State.Id))  // Mapear ID del estado
                 .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State.Name))  // Mapear nombre del estado
                 .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.Role != null ? src.Role.Id : (int?)null))  // Manejar posibles valores nulos de Role
-                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : null))  // Manejar posibles valores nulos de Role
-                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.Active));
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : null));  // Manejar posibles valores nulos de Role
 
             // Mapeo de UserRequestDto a User
             CreateMap<UserRequestDto, User>()
@@ -70,7 +69,6 @@ namespace Application.Mappings
                 .ForMember(dest => dest.ScheduleId, opt => opt.MapFrom(src => src.ScheduleId))
                 .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.StateId))
                 .ForMember(dest => dest.Reason, opt => opt.MapFrom(src => src.Reason))
-                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active))
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())  // CreatedAt will be set when creating the entity
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore()); // UpdatedAt will be set when updating the entity
 
@@ -83,8 +81,7 @@ namespace Application.Mappings
                 .ForMember(dest => dest.Specialty, opt => opt.MapFrom(src => src.Specialty))  // Map to SpecialtyDto
                 .ForMember(dest => dest.Schedule, opt => opt.MapFrom(src => src.Schedule))  // Map to ScheduleResponseDto
                 .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State))  // Map to StateDto
-                .ForMember(dest => dest.Reason, opt => opt.MapFrom(src => src.Reason))
-                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active));
+                .ForMember(dest => dest.Reason, opt => opt.MapFrom(src => src.Reason));
 
             // Mapeo para la entidad MedicalRecord y su DTO
             CreateMap<MedicalRecordRequestDto, MedicalRecord>();

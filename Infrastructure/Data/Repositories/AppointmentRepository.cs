@@ -46,4 +46,31 @@ public class AppointmentRepository : BaseRepository<Appointment>, IAppointmentRe
             .Include(a => a.State)                  // Incluir el estado
             .ToListAsync();
     }
+
+    /// <summary>
+    /// Retrieves appointments based on the specified state name.
+    /// </summary>
+    /// <param name="stateName">The name of the desired state (e.g., "Scheduled", "Completed").</param>
+    /// <returns>A list of appointments with the specified state.</returns>
+    public async Task<IEnumerable<Appointment>> GetByStateAsync(string stateName)
+    {
+        var stateId = await _context.States
+            .Where(state => state.Name == stateName)
+            .Select(state => state.Id)
+            .FirstOrDefaultAsync();
+
+        if (stateId == 0)
+        {
+            return Enumerable.Empty<Appointment>();
+        }
+
+        return await _context.Appointments
+            .Where(appointment => appointment.StateId == stateId)
+            .Include(a => a.Patient)    //Include related entities
+            .Include(a => a.Staff)
+            .Include(a => a.Specialty)
+            .Include(a => a.Schedule)
+            .AsNoTracking()
+            .ToListAsync();
+    }
 }

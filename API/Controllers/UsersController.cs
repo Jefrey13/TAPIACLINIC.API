@@ -108,5 +108,29 @@ namespace API.Controllers
             var response = new ApiResponse<string>(true, "User deleted successfully", null, 204);
             return Ok(response);
         }
+
+        /// <summary>
+        /// Retrieves users with the "Paciente" role and the specified state ID.
+        /// </summary>
+        /// <param name="stateId">The State ID of the users to retrieve.</param>
+        /// <returns>A list of UserResponseDto objects representing users with the "Paciente" role in the specified state.</returns>
+        [HttpGet("by-state/{stateId}")]
+        public async Task<ActionResult<ApiResponse<IEnumerable<UserResponseDto>>>> GetUsersByState(int stateId)
+        {
+            if (stateId <= 0)
+            {
+                return BadRequest(new ApiResponse<IEnumerable<UserResponseDto>>(false, "Invalid state ID", null, 400));
+            }
+
+            var users = await _userAppService.GetUsersByStateAsync(stateId);
+
+            if (users == null || !users.Any())
+            {
+                return NotFound(new ApiResponse<IEnumerable<UserResponseDto>>(false, "No users found for the specified state", null, 404));
+            }
+
+            var response = new ApiResponse<IEnumerable<UserResponseDto>>(true, "Users retrieved by state successfully", users, 200);
+            return Ok(response);
+        }
     }
 }

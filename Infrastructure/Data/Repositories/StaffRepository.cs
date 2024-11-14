@@ -99,5 +99,19 @@ namespace Infrastructure.Data.Repositories
             _context.Staffs.Remove(staff);
             await _context.SaveChangesAsync();
         }
+
+        /// <summary>
+        /// Retrieves staff members whose associated users have a specified state ID and a role other than "Paciente".
+        /// </summary>
+        /// <param name="stateId">The ID of the desired state (e.g., active, inactive).</param>
+        /// <returns>A list of staff members with users in the specified state and a role other than "Paciente".</returns>
+        public async Task<IEnumerable<Staff>> GetByStateAsync(int stateId)
+        {
+            return await _context.Staffs
+                .Include(s => s.User)  // Include the associated User entity
+                .Where(s => s.User.StateId == stateId && s.User.Role.Name != "Paciente")
+                .AsNoTracking()  // Disable tracking for read-only data to improve performance
+                .ToListAsync();
+        }
     }
 }

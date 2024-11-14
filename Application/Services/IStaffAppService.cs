@@ -56,5 +56,12 @@ namespace Application.Services
         /// <param name="specialtyId">The Specialty ID of the staff members.</param>
         /// <returns>A list of staff members in the given specialty.</returns>
         Task<IEnumerable<StaffResponseDto>> GetStaffBySpecialtyIdAsync(int specialtyId);
+
+        /// <summary>
+        /// Retrieves staff members by their associated state ID.
+        /// </summary>
+        /// <param name="stateId">The state ID to filter staff members.</param>
+        /// <returns>A list of staff members in the specified state.</returns>
+        Task<IEnumerable<StaffResponseDto>> GetStaffByStateAsync(int stateId);
     }
 }

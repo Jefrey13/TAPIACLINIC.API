@@ -44,5 +44,7 @@ namespace Application.Services
         /// <param name="id">The ID of the user to retrieve.</param>
         /// <returns>A UserResponseDto representing the requested user.</returns>
         Task<UserResponseDto> GetUserByIdAsync(int id);
+
+        Task<IEnumerable<UserResponseDto>> GetUsersByStateAsync(int stateId);
     }
 }

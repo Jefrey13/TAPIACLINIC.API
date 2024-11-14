@@ -86,5 +86,15 @@ namespace Application.Services.Impl
         {
             return await _mediator.Send(new GetStaffBySpecialtyIdQuery(specialtyId));
         }
+
+        /// <summary>
+        /// Sends a query to retrieve staff members by State ID.
+        /// </summary>
+        /// <param name="stateId">The State ID to filter staff members.</param>
+        /// <returns>A list of staff members in the specified state.</returns>
+        public async Task<IEnumerable<StaffResponseDto>> GetStaffByStateAsync(int stateId)
+        {
+            return await _mediator.Send(new GetByStateQuery(stateId));
+        }
     }
 }

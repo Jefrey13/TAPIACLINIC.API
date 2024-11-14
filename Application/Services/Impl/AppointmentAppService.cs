@@ -104,5 +104,10 @@ namespace Application.Services.Impl
         {
             return await _mediator.Send(new GetAppointmentByIdQuery(id));
         }
+
+        public async Task<IEnumerable<AppointmentResponseDto>> GetAppointmentsByStateAsync(string stateName)
+        {
+            return await _mediator.Send(new GetAppointmentsByStateQuery(stateName));
+        }
     }
 }

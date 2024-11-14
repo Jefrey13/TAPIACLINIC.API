@@ -79,5 +79,10 @@ namespace Application.Services.Impl
         {
             return await _mediator.Send(new GetUserByIdQuery(id));
         }
+
+        public async Task<IEnumerable<UserResponseDto>> GetUsersByStateAsync(int stateId)
+        {
+            return await _mediator.Send(new GetUsersByStateQuery(stateId));
+        }
     }
 }
