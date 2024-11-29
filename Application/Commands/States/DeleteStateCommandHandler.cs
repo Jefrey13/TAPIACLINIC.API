@@ -30,7 +30,7 @@ namespace Application.Commands.States
                 throw new NotFoundException(nameof(State), request.Id); // Custom exception for entity not found
             }
 
-            await _stateRepository.DeleteAsync(state);
+            await _stateRepository.ToggleActiveStateAsync(state);
             return Unit.Value;
         }
     }

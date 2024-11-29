@@ -92,5 +92,16 @@
             Errors = null;
             Meta = meta;
         }
+
+        public ApiResponse(bool success, string message, T data, int statusCode, Dictionary<string, string> errors)
+        {
+            Success = success;
+            Message = message;
+            Data = data;
+            StatusCode = statusCode;
+            Errors = errors;
+            Meta = null;
+        }
+
     }
 }

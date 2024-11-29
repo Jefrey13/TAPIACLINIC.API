@@ -26,7 +26,7 @@ namespace Application.Commands.Schedules
                 throw new NotFoundException(nameof(Schedule), request.Id);
             }
 
-            await _scheduleRepository.DeleteAsync(schedule);
+            await _scheduleRepository.ToggleActiveStateAsync(schedule);
             return Unit.Value;
         }
     }

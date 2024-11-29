@@ -15,22 +15,22 @@ namespace Application.Services
         /// Creates a new user in the system.
         /// </summary>
         /// <param name="command">The command containing the user data to be created.</param>
-        /// <returns>The ID of the newly created user.</returns>
-        Task<int> CreateUserAsync(CreateUserCommand command);
+        /// <returns>Returns true if the user was created successfully.</returns>
+        Task<bool> CreateUserAsync(CreateUserCommand command);
 
         /// <summary>
         /// Updates an existing user in the system.
         /// </summary>
         /// <param name="command">The command containing the updated user data.</param>
-        /// <returns>A task representing the asynchronous update operation.</returns>
-        Task UpdateUserAsync(UpdateUserCommand command);
+        /// <returns>Returns true if the user was updated successfully.</returns>
+        Task<bool> UpdateUserAsync(UpdateUserCommand command);
 
         /// <summary>
         /// Deletes a user from the system by their ID.
         /// </summary>
         /// <param name="command">The command containing the ID of the user to delete.</param>
-        /// <returns>A task representing the asynchronous delete operation.</returns>
-        Task DeleteUserAsync(DeleteUserCommand command);
+        /// <returns>Returns true if the user was deleted successfully.</returns>
+        Task<bool> DeleteUserAsync(DeleteUserCommand command);
 
         /// <summary>
         /// Retrieves all users in the system.

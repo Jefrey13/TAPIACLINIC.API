@@ -26,7 +26,7 @@ namespace Application.Handlers.Menus
                 throw new NotFoundException(nameof(Menu), request.Id);
             }
 
-            await _menuRepository.DeleteAsync(menu);
+            await _menuRepository.ToggleActiveStateAsync(menu);
             return Unit.Value;
         }
     }

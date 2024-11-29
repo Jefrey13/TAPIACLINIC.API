@@ -33,20 +33,21 @@ namespace Application.Services.Impl
         /// The command is handled asynchronously through MediatR.
         /// </summary>
         /// <param name="command">Command with user creation details.</param>
-        /// <returns>Returns the ID of the created user.</returns>
-        public async Task<int> CreateUserAsync(CreateUserCommand command)
+        /// <returns>Returns true if the user was created successfully.</returns>
+        public async Task<bool> CreateUserAsync(CreateUserCommand command)
         {
-            return await _mediator.Send(command);
+            return await _mediator.Send(command); // Correcto, retorna un valor booleano indicando éxito o fallo
         }
 
         /// <summary>
         /// Sends a command to update a user.
-        /// The command is dispatched asynchronously through MediatR and does not return any data.
+        /// The command is dispatched asynchronously through MediatR.
         /// </summary>
         /// <param name="command">Command containing the updated user data.</param>
-        public async Task UpdateUserAsync(UpdateUserCommand command)
+        /// <returns>Returns true if the user was updated successfully.</returns>
+        public async Task<bool> UpdateUserAsync(UpdateUserCommand command)
         {
-            await _mediator.Send(command);
+            return await _mediator.Send(command); // Ahora retorna bool para ser consistente con la interfaz
         }
 
         /// <summary>
@@ -54,9 +55,10 @@ namespace Application.Services.Impl
         /// The operation is asynchronous and is handled through MediatR.
         /// </summary>
         /// <param name="command">Command specifying the user ID to be deleted.</param>
-        public async Task DeleteUserAsync(DeleteUserCommand command)
+        /// <returns>Returns true if the user was deleted successfully.</returns>
+        public async Task<bool> DeleteUserAsync(DeleteUserCommand command)
         {
-            await _mediator.Send(command);
+            return await _mediator.Send(command); // Ahora retorna bool para ser consistente con la interfaz
         }
 
         /// <summary>

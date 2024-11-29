@@ -12,6 +12,7 @@ using Domain.ValueObjects;
 using Application.Models.ReponseDtos;
 using Application.Models.RequestDtos;
 using Application.Models.ResponseDtos;
+using Application.Models.RequestDtos.UpdateRequestDto;
 
 namespace Application.Mappings
 {
@@ -50,15 +51,25 @@ namespace Application.Mappings
 
             // Mapeo de Staff a StaffResponseDto
             CreateMap<Staff, StaffResponseDto>()
-                .ForMember(dest => dest.SpecialtyName, opt => opt.MapFrom(src => src.Specialty != null ? src.Specialty.Name : null))  // Mapear el nombre de la especialidad
-                .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User));  // Mapear User a UserResponseDto
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id)) // Mapear Id del staff
+                .ForMember(dest => dest.MinsaCode, opt => opt.MapFrom(src => src.MinsaCode)) // Mapear el código MINSA
+                .ForMember(dest => dest.YearsExperience, opt => opt.MapFrom(src => src.YearsExperience)) // Mapear los años de experiencia
+                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.User.StateId == 1)) // Determinar si está activo en función del estado del usuario
+                .ForMember(dest => dest.User, opt => opt.MapFrom(src => src.User)) // Mapear la relación con el usuario
+                .ForMember(dest => dest.SpecialtyId, opt => opt.MapFrom(src => src.SpecialtyId)) // Mapear el ID de la especialidad
+                .ForMember(dest => dest.SpecialtyName, opt => opt.MapFrom(src => src.Specialty != null ? src.Specialty.Name : null)) // Mapear el nombre de la especialidad
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt)) // Mapear la fecha de creación
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt)); // Mapear la fecha de actualización
 
             // Mapeo de StaffRequestDto a Staff
             CreateMap<StaffRequestDto, Staff>()
-                .ForMember(dest => dest.UserId, opt => opt.Ignore())  // El UserId se asignará luego de crear el usuario
-                .ForMember(dest => dest.SpecialtyId, opt => opt.MapFrom(src => src.SpecialtyId))
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));
+                .ForMember(dest => dest.UserId, opt => opt.Ignore()) // El UserId se asignará después de crear el usuario
+                .ForMember(dest => dest.SpecialtyId, opt => opt.MapFrom(src => src.SpecialtyId)) // Mapear el ID de la especialidad
+                .ForMember(dest => dest.MinsaCode, opt => opt.MapFrom(src => src.MinsaCode)) // Mapear el código MINSA
+                .ForMember(dest => dest.YearsExperience, opt => opt.MapFrom(src => src.YearsExperience)) // Mapear los años de experiencia
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore()) // La fecha de creación se maneja en la entidad
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore()); // La fecha de actualización se maneja en la entidad
+
 
             // Mapping from AppointmentRequestDto to Appointment
             CreateMap<AppointmentRequestDto, Appointment>()
@@ -174,6 +185,25 @@ namespace Application.Mappings
                 .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active));
 
             CreateMap<LoginResponseDto, User>();
+
+            // Mapping from UserUpdateRequestDto to User
+            CreateMap<UserUpdateRequestDto, User>()
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+                .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => new PhoneNumber(src.PhoneAddress)))  // Crear un nuevo Value Object para PhoneNumber
+                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => Enum.Parse<Gender>(src.Gender)))  // Convertir string a enum Gender
+                .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate))
+                .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.StateId))  // Mapear ID del estado
+                .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.RoleId))  // Mapear ID del rol
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));  // Actualizar el campo UpdatedAt automáticamente
+
+            // Mapping from StaffUpdateRequestDto to Staff
+            CreateMap<StaffUpdateRequestDto, Staff>()
+                .ForMember(dest => dest.YearsExperience, opt => opt.MapFrom(src => src.YearsExperience)) // Mapear los años de experiencia
+                .ForMember(dest => dest.SpecialtyId, opt => opt.MapFrom(src => src.SpecialtyId)) // Mapear el ID de la especialidad
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));// Actualizar el campo UpdatedAt automáticamente
+
         }
     }
 }

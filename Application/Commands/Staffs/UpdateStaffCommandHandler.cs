@@ -4,52 +4,61 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Repositories;
 using MediatR;
-using System.Threading.Tasks;
 
-namespace Application.Commands.Staffs
+namespace Application.Handlers.Staffs
 {
     /// <summary>
     /// Handler for updating an existing staff member.
-    /// Optionally updates the associated user.
+    /// Maps updated fields from StaffRequestDto to the Staff entity.
     /// </summary>
-    public class UpdateStaffCommandHandler : IRequestHandler<UpdateStaffCommand, Unit>
+    public class UpdateStaffCommandHandler : IRequestHandler<UpdateStaffCommand, bool>
     {
         private readonly IStaffRepository _staffRepository;
-        private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
 
-        public UpdateStaffCommandHandler(IStaffRepository staffRepository, IUserRepository userRepository, IMapper mapper)
+        public UpdateStaffCommandHandler(IStaffRepository staffRepository, IMapper mapper)
         {
             _staffRepository = staffRepository;
-            _userRepository = userRepository;
             _mapper = mapper;
         }
 
-        public async Task<Unit> Handle(UpdateStaffCommand request, CancellationToken cancellationToken)
+        public async Task<bool> Handle(UpdateStaffCommand request, CancellationToken cancellationToken)
         {
-            // Check if the staff member exists
-            var staff = await _staffRepository.GetByIdAsync(request.Id);
-
-            if (staff == null)
+            try
             {
-                throw new NotFoundException(nameof(Staff), request.Id);
+                // Validate the ID
+                if (request.Id <= 0)
+                {
+                    throw new ValidationException("Invalid staff ID.");
+                }
+
+                // Retrieve staff entity
+                var staff = await _staffRepository.GetByIdAsync(request.Id);
+                if (staff == null)
+                {
+                    throw new NotFoundException(nameof(Staff), request.Id);
+                }
+
+                // Map updated fields
+                _mapper.Map(request.StaffDto, staff);
+
+                // Save changes
+                await _staffRepository.UpdateAsync(staff);
+
+                return true;
             }
-
-            // Update the staff member with new data from the DTO
-            _mapper.Map(request.StaffDto, staff);
-            staff.UpdatedAt = DateTime.Now; // Update modification date
-            await _staffRepository.UpdateAsync(staff);
-
-            // Optionally update the associated user if necessary
-            var user = await _userRepository.GetByIdAsync(staff.UserId);
-            if (user != null && request.StaffDto.User != null)
+            catch (ValidationException ex)
             {
-                // Update user information
-                _mapper.Map(request.StaffDto.User, user);
-                await _userRepository.UpdateAsync(user);
+                throw new ValidationException($"Validation error: {ex.Message}");
             }
-
-            return Unit.Value; // Return Unit to indicate completion
+            catch (NotFoundException ex)
+            {
+                throw new NotFoundException($"Staff member not found: {ex.Message}", request.Id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An unexpected error occurred while updating the staff member: {ex.Message}", ex);
+            }
         }
     }
 }

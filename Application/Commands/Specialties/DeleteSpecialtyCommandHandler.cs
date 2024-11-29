@@ -25,7 +25,7 @@ namespace Application.Commands.Specialties
                 throw new NotFoundException(nameof(Specialty), request.Id);
             }
 
-            await _specialtyRepository.DeleteAsync(specialty);
+            await _specialtyRepository.ToggleActiveStateAsync(specialty);
             return Unit.Value;
         }
     }

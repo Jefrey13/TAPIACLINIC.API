@@ -26,7 +26,7 @@ namespace Application.Handlers.Permissions
                 throw new NotFoundException(nameof(Permission), request.Id);
             }
 
-            await _permissionRepository.DeleteAsync(permission);
+            await _permissionRepository.ToggleActiveStateAsync(permission);
             return Unit.Value;
         }
     }

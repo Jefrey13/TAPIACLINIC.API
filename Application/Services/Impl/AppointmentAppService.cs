@@ -109,5 +109,38 @@ namespace Application.Services.Impl
         {
             return await _mediator.Send(new GetAppointmentsByStateQuery(stateName));
         }
+
+        /// <summary>
+        /// Updates the state of an appointment.
+        /// </summary>
+        /// <param name="command">The command containing the appointment ID and new state name.</param>
+        /// <param name="jwtToken">The JWT token for extracting user information.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task UpdateAppointmentStateAsync(UpdateAppointmentStateCommand command, string jwtToken)
+        {
+            // Extract the username from the JWT token
+            var username = _jwtTokenService.GetUsernameFromToken(jwtToken);
+            var user = await _userRepository.GetUserByUserNameAsync(username);
+
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            // Update the appointment state
+            await _mediator.Send(command);
+
+            // Retrieve the updated appointment details
+            var appointment = await _mediator.Send(new GetAppointmentByIdQuery(command.AppointmentId));
+
+            // Send notification email to the user
+            var emailBody = $@"
+                <h1>Appointment State Updated</h1>
+                <p>Appointment ID: {appointment.Id}</p>
+                <p>New State: {appointment.State.StateName}</p>";
+
+            await _emailSender.SendEmailAsync(user.Email.Value.ToString(), "Appointment State Updated", emailBody);
+        }
+
     }
 }

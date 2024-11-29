@@ -46,5 +46,14 @@ namespace Application.Services
         Task<AppointmentResponseDto> GetAppointmentByIdAsync(int id);
 
         Task<IEnumerable<AppointmentResponseDto>> GetAppointmentsByStateAsync(string stateName);
+
+
+        /// <summary>
+        /// Updates the state of an appointment.
+        /// </summary>
+        /// <param name="command">The command containing the appointment ID and new state name.</param>
+        /// <param name="jwtToken">The JWT token for extracting user information.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        Task UpdateAppointmentStateAsync(UpdateAppointmentStateCommand command, string jwtToken);
     }
 }

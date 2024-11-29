@@ -15,6 +15,54 @@ namespace Infrastructure.Data.Repositories
         public UserRepository(ApplicationDbContext context) : base(context) { }
 
         /// <summary>
+        /// Validates if the UserName, Email, or IdCard are already in use.
+        /// </summary>
+        /// <param name="user">The user entity to validate.</param>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if any of the fields (UserName, Email, IdCard) are already in use.
+        /// </exception>
+        private async Task ValidateUniqueFieldsAsync(User user)
+        {
+            var existingUser = await _context.Users
+                .Where(u => u.Id != user.Id) // Exclude the current user for updates
+                .Where(u => u.UserName == user.UserName
+                    || u.Email.Value == user.Email.Value
+                    || u.IdCard == user.IdCard)
+                .FirstOrDefaultAsync();
+
+            if (existingUser != null)
+            {
+                if (existingUser.UserName == user.UserName)
+                    throw new InvalidOperationException($"El nombre de usuario '{user.UserName}' ya está en uso. Por favor, elija otro.");
+                if (existingUser.Email.Value == user.Email.Value)
+                    throw new InvalidOperationException($"El correo electrónico '{user.Email.Value}' ya está en uso. Por favor, use otro.");
+                if (existingUser.IdCard == user.IdCard)
+                    throw new InvalidOperationException($"La cédula de identidad '{user.IdCard}' ya está registrada. Verifique los datos ingresados.");
+
+            }
+        }
+
+        /// <summary>
+        /// Adds a new user to the database after validating unique fields.
+        /// </summary>
+        /// <param name="user">The user entity to add.</param>
+        public override async Task AddAsync(User user)
+        {
+            await ValidateUniqueFieldsAsync(user);
+            await base.AddAsync(user);
+        }
+
+        /// <summary>
+        /// Updates an existing user in the database after validating unique fields.
+        /// </summary>
+        /// <param name="user">The user entity to update.</param>
+        public override async Task UpdateAsync(User user)
+        {
+            await ValidateUniqueFieldsAsync(user);
+            await base.UpdateAsync(user);
+        }
+
+        /// <summary>
         /// Retrieves a user by their email address.
         /// </summary>
         /// <param name="email">The email address of the user.</param>
@@ -27,18 +75,19 @@ namespace Infrastructure.Data.Repositories
                 .FirstOrDefaultAsync(u => u.Email.Value == email);
         }
         /// <summary>
-        /// Retrieves a user by their email address.
+        /// Retrieves an active user by their username.
         /// </summary>
-        /// <param name="email">The email address of the user.</param>
-        /// <returns>The user with the specified email, or null if not found.</returns>
+        /// <param name="userName">The username of the user to retrieve.</param>
+        /// <returns>The active user with the specified username, or null if not found or inactive.</returns>
         public async Task<User> GetUserByUserNameAsync(string userName)
         {
+            // Retrieve the user only if they are in the "Activo" state
             return await _context.Users
-                .Include(u => u.State)  // Incluir relación con el Estado
-                .Include(u => u.Role)   // Incluir relación con el Rol
-                .FirstOrDefaultAsync(u => u.UserName == userName);
-
+                .Include(u => u.State) // Include the related State
+                .Include(u => u.Role)  // Include the related Role
+                .FirstOrDefaultAsync(u => u.UserName == userName && u.StateId == 1);
         }
+
 
         /// <summary>
         /// Retrieves a user by their ID, including the related State and Role.
@@ -85,9 +134,12 @@ namespace Infrastructure.Data.Repositories
         public async Task<IEnumerable<User>> GetByStateAsync(int stateId)
         {
             return await _context.Users
+                .Include(user => user.State)  // Incluir el estado relacionado
+                .Include(user => user.Role)   // Incluir el rol relacionado
                 .Where(user => user.StateId == stateId && user.Role.Name == "Paciente")
-                .AsNoTracking()  // Optimize for read-only data by disabling tracking
+                .AsNoTracking()               // Optimizar para datos de solo lectura
                 .ToListAsync();
         }
+
     }
 }

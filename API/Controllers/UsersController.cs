@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Application.Models.RequestDtos.UpdateRequestDto;
 
 namespace API.Controllers
 {
@@ -16,121 +17,181 @@ namespace API.Controllers
     {
         private readonly IUserAppService _userAppService;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UsersController"/> class.
-        /// </summary>
-        /// <param name="userAppService">The application service responsible for user-related operations.</param>
         public UsersController(IUserAppService userAppService)
         {
             _userAppService = userAppService;
         }
 
         /// <summary>
-        /// Retrieves all users from the system.
+        /// Recupera todos los usuarios del sistema.
         /// </summary>
-        /// <returns>A list of UserResponseDto representing all users.</returns>
+        /// <returns>Una lista de UserResponseDto representando a todos los usuarios.</returns>
         [HttpGet]
         public async Task<ActionResult<ApiResponse<IEnumerable<UserResponseDto>>>> GetAllUsers()
         {
-            var users = await _userAppService.GetAllUsersAsync();
-            var response = new ApiResponse<IEnumerable<UserResponseDto>>(true, "Users retrieved successfully", users, 200);
-            return Ok(response);
+            try
+            {
+                var users = await _userAppService.GetAllUsersAsync();
+
+                if (users == null || !users.Any())
+                {
+                    return ResponseHelper.NotFound<IEnumerable<UserResponseDto>>("No se encontraron usuarios");
+                }
+
+                return ResponseHelper.Success(users, "Usuarios recuperados exitosamente");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<IEnumerable<UserResponseDto>>($"Ocurrió un error: {ex.Message}");
+            }
         }
 
         /// <summary>
-        /// Retrieves a specific user by their ID.
+        /// Recupera un usuario específico por su ID.
         /// </summary>
-        /// <param name="id">The ID of the user to retrieve.</param>
-        /// <returns>A UserResponseDto representing the requested user.</returns>
+        /// <param name="id">El ID del usuario a recuperar.</param>
+        /// <returns>Un UserResponseDto representando al usuario solicitado.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<UserResponseDto>>> GetUserById(int id)
         {
-            var user = await _userAppService.GetUserByIdAsync(id);
-            if (user == null)
+            if (id <= 0)
             {
-                var errorResponse = new ApiResponse<UserResponseDto>(false, "User not found", null, 404);
-                return NotFound(errorResponse);
+                return ResponseHelper.BadRequest<UserResponseDto>("ID de usuario inválido");
             }
 
-            var response = new ApiResponse<UserResponseDto>(true, "User retrieved successfully", user, 200);
-            return Ok(response);
+            try
+            {
+                var user = await _userAppService.GetUserByIdAsync(id);
+                if (user == null)
+                {
+                    return ResponseHelper.NotFound<UserResponseDto>("Usuario no encontrado");
+                }
+
+                return ResponseHelper.Success(user, "Usuario recuperado exitosamente");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<UserResponseDto>($"Ocurrió un error: {ex.Message}");
+            }
         }
 
         /// <summary>
-        /// Creates a new user.
+        /// Crea un nuevo usuario.
         /// </summary>
-        /// <param name="userDto">The UserRequestDto containing the new user's details.</param>
-        /// <returns>The ID of the newly created user.</returns>
+        /// <param name="userDto">El UserRequestDto que contiene los detalles del nuevo usuario.</param>
+        /// <returns>Un ApiResponse que contiene el UserResponseDto del usuario creado.</returns>
         [HttpPost]
         [AllowAnonymous]
-        public async Task<ActionResult<ApiResponse<int>>> CreateUser([FromBody] UserRequestDto userDto)
+        public async Task<ActionResult<ApiResponse<UserResponseDto>>> CreateUser([FromBody] UserRequestDto userDto)
         {
-            var createdUserId = await _userAppService.CreateUserAsync(new CreateUserCommand(userDto));
-            var response = new ApiResponse<int>(true, "User created successfully", createdUserId, 201);
-            return CreatedAtAction(nameof(GetUserById), new { id = createdUserId }, response);
+            if (!ModelState.IsValid)
+            {
+                return ResponseHelper.BadRequest<UserResponseDto>("Datos de usuario inválidos");
+            }
+
+            try
+            {
+                var createdUser = await _userAppService.CreateUserAsync(new CreateUserCommand(userDto));
+                if (createdUser == null)
+                {
+                    return ResponseHelper.Error<UserResponseDto>("Error al crear el usuario");
+                }
+                return ResponseHelper.Success<UserResponseDto>(null, "Usuario creado exitosamente", 201);
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<UserResponseDto>($"Ocurrió un error: {ex.Message}");
+            }
         }
 
         /// <summary>
-        /// Updates an existing user.
+        /// Actualiza un usuario existente.
         /// </summary>
-        /// <param name="id">The ID of the user to update.</param>
-        /// <param name="userDto">The UserRequestDto containing the updated user's details.</param>
-        /// <returns>No content if the update is successful, or a BadRequest if there's a mismatch in IDs.</returns>
-        [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<string>>> UpdateUser(int id, [FromBody] UserRequestDto userDto)
+        /// <param name="id">El ID del usuario a actualizar.</param>
+        /// <param name="userDto">El UserRequestDto que contiene los detalles actualizados del usuario.</param>
+        /// <returns>Un ApiResponse que contiene el UserResponseDto del usuario actualizado.</returns>
+        //[HttpPut("{id}")]
+        //public async Task<ActionResult<ApiResponse<UserResponseDto>>> UpdateUser(int id, [FromBody] UserUpdateRequestDto userDto)
+        //{
+        //    if (id <= 0)
+        //    {
+        //        return ResponseHelper.BadRequest<UserResponseDto>("ID de usuario inválido");
+        //    }
+
+        //    try
+        //    {
+        //        var updatedUser = await _userAppService.UpdateUserAsync(new UpdateUserCommand(id, userDto));
+        //        if (updatedUser == null)
+        //        {
+        //            return ResponseHelper.NotFound<UserResponseDto>("Usuario no encontrado");
+        //        }
+        //        return ResponseHelper.Success(new UserResponseDto(), "Usuario actualizado exitosamente");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return ResponseHelper.Error<UserResponseDto>($"Ocurrió un error: {ex.Message}");
+        //    }
+        //}
+
+        /// <summary>
+        /// Actualiza el estado de un usuario por su ID.
+        /// </summary>
+        /// <param name="id">El ID del usuario cuyo estado se desea actualizar.</param>
+        /// <param name="newStateId">El nuevo estado del usuario.</param>
+        /// <returns>Un ApiResponse que contiene el UserResponseDto del usuario con el estado actualizado.</returns>
+        [HttpPatch("{id}/change-state")]
+        public async Task<ActionResult<ApiResponse<UserResponseDto>>> UpdateUserState(int id)
         {
             if (id <= 0)
             {
-                var errorResponse = new ApiResponse<string>(false, "Invalid User ID", null, 400);
-                return BadRequest(errorResponse);
+                return ResponseHelper.BadRequest<UserResponseDto>("ID de usuario inválido");
             }
 
-            await _userAppService.UpdateUserAsync(new UpdateUserCommand(id, userDto));
-            var response = new ApiResponse<string>(true, "User updated successfully", null, 204);
-            return Ok(response);
-        }
-
-        /// <summary>
-        /// Deletes a user by their ID.
-        /// </summary>
-        /// <param name="id">The ID of the user to delete.</param>
-        /// <returns>No content if the deletion is successful.</returns>
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse<string>>> DeleteUser(int id)
-        {
-            if (id <= 0)
+            try
             {
-                var errorResponse = new ApiResponse<string>(false, "Invalid User ID", null, 400);
-                return BadRequest(errorResponse);
+                var updatedUser = await _userAppService.DeleteUserAsync(new DeleteUserCommand(id));
+                
+                if (updatedUser == null)
+                {
+                    return ResponseHelper.NotFound<UserResponseDto>("Usuario no encontrado");
+                }
+                return ResponseHelper.Success(new UserResponseDto(), "Estado del usuario actualizado exitosamente");
             }
-
-            await _userAppService.DeleteUserAsync(new DeleteUserCommand(id));
-            var response = new ApiResponse<string>(true, "User deleted successfully", null, 204);
-            return Ok(response);
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<UserResponseDto>($"Ocurrió un error: {ex.Message}");
+            }
         }
 
+
         /// <summary>
-        /// Retrieves users with the "Paciente" role and the specified state ID.
+        /// Recupera usuarios con el rol "Paciente" y el ID de estado especificado.
         /// </summary>
-        /// <param name="stateId">The State ID of the users to retrieve.</param>
-        /// <returns>A list of UserResponseDto objects representing users with the "Paciente" role in the specified state.</returns>
+        /// <param name="stateId">El ID de estado de los usuarios a recuperar.</param>
+        /// <returns>Una lista de UserResponseDto que representan a los usuarios con el rol "Paciente" en el estado especificado.</returns>
         [HttpGet("by-state/{stateId}")]
         public async Task<ActionResult<ApiResponse<IEnumerable<UserResponseDto>>>> GetUsersByState(int stateId)
         {
             if (stateId <= 0)
             {
-                return BadRequest(new ApiResponse<IEnumerable<UserResponseDto>>(false, "Invalid state ID", null, 400));
+                return ResponseHelper.BadRequest<IEnumerable<UserResponseDto>>("ID de estado inválido");
             }
 
-            var users = await _userAppService.GetUsersByStateAsync(stateId);
-
-            if (users == null || !users.Any())
+            try
             {
-                return NotFound(new ApiResponse<IEnumerable<UserResponseDto>>(false, "No users found for the specified state", null, 404));
-            }
+                var users = await _userAppService.GetUsersByStateAsync(stateId);
 
-            var response = new ApiResponse<IEnumerable<UserResponseDto>>(true, "Users retrieved by state successfully", users, 200);
-            return Ok(response);
+                if (users == null || !users.Any())
+                {
+                    return ResponseHelper.NotFound<IEnumerable<UserResponseDto>>("No se encontraron usuarios para el estado especificado");
+                }
+
+                return ResponseHelper.Success(users, "Usuarios recuperados exitosamente");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<IEnumerable<UserResponseDto>>($"Ocurrió un error: {ex.Message}");
+            }
         }
     }
 }

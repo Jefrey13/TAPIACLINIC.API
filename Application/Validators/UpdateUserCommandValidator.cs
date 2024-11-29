@@ -1,62 +1,48 @@
-﻿using Application.Commands.Users;
-using FluentValidation;
+﻿//using Application.Commands.Users;
+//using FluentValidation;
 
-namespace Application.Validators
-{
-    /// <summary>
-    /// Validator for the UpdateUserCommand.
-    /// Ensures that the user data is valid before proceeding with the update.
-    /// </summary>
-    public class UpdateUserCommandValidator : AbstractValidator<UpdateUserCommand>
-    {
-        public UpdateUserCommandValidator()
-        {
-            // First Name validation
-            RuleFor(x => x.UserDto.FirstName)
-                .NotEmpty().WithMessage("First name is required.")
-                .MaximumLength(100).WithMessage("First name must not exceed 100 characters.");
+//namespace Application.Validators
+//{
+//    /// <summary>
+//    /// Validator for the UpdateUserCommand.
+//    /// Ensures that the user data is valid before proceeding with the update.
+//    /// </summary>
+//    public class UpdateUserCommandValidator : AbstractValidator<UpdateUserCommand>
+//    {
+//        public UpdateUserCommandValidator()
+//        {
+//            RuleFor(x => x.UserDto.FirstName)
+//                .NotEmpty().WithMessage("First name is required.")
+//                .MaximumLength(100).WithMessage("First name must not exceed 100 characters.");
 
-            // Last Name validation
-            RuleFor(x => x.UserDto.LastName)
-                .NotEmpty().WithMessage("Last name is required.")
-                .MaximumLength(100).WithMessage("Last name must not exceed 100 characters.");
+//            RuleFor(x => x.UserDto.LastName)
+//                .NotEmpty().WithMessage("Last name is required.")
+//                .MaximumLength(100).WithMessage("Last name must not exceed 100 characters.");
 
-            // Email validation
-            RuleFor(x => x.UserDto.Email)
-                .NotEmpty().WithMessage("Email is required.")
-                .EmailAddress().WithMessage("A valid email is required.");
+//            RuleFor(x => x.UserDto.Email)
+//                .NotEmpty().WithMessage("Email is required.")
+//                .EmailAddress().WithMessage("A valid email is required.");
 
-            // Last Name validation
-            RuleFor(x => x.UserDto.Address)
-                .NotEmpty().WithMessage("Last address is required.");
+//            // Validar campos opcionales solo si están presentes
+//            RuleFor(x => x.UserDto.Address)
+//                .MaximumLength(255).When(x => !string.IsNullOrEmpty(x.UserDto.Address));
 
-            // Phone Address validation
-            RuleFor(x => x.UserDto.PhoneAddress)
-                .NotEmpty().WithMessage("Phone number is required.")
-                .MaximumLength(15).WithMessage("Phone number must not exceed 15 characters.");
+//            RuleFor(x => x.UserDto.PhoneAddress)
+//                .MaximumLength(15).When(x => !string.IsNullOrEmpty(x.UserDto.PhoneAddress));
 
-            // Gender validation
-            RuleFor(x => x.UserDto.Gender)
-                .NotEmpty().WithMessage("Gender is required.")
-                .Must(gender => gender == "Male" || gender == "Female").WithMessage("Gender must be either 'Male' or 'Female'.");
+//            //RuleFor(x => x.UserDto.BirthDate)
+//            //    .LessThanOrEqualTo(DateTime.Now.AddYears(-18))
+//            //    .When(x => x.UserDto.BirthDate.HasValue)
+//            //    .WithMessage("User must be at least 18 years old.");
 
-            // Birth Date validation
-            RuleFor(x => x.UserDto.BirthDate)
-                .NotEmpty().WithMessage("Birth date is required.")
-                .LessThanOrEqualTo(DateTime.Now.AddYears(-18)).WithMessage("User must be at least 18 years old.");
+//            RuleFor(x => x.UserDto.Gender)
+//                .Must(g => g == "Male" || g == "Female")
+//                .When(x => !string.IsNullOrEmpty(x.UserDto.Gender))
+//                .WithMessage("Gender must be either 'Male' or 'Female'.");
 
-            // ID Card validation
-            RuleFor(x => x.UserDto.IdCard)
-                .NotEmpty().WithMessage("ID card is required.")
-                .MaximumLength(20).WithMessage("ID card must not exceed 20 characters.");
-
-            // StateId validation
-            RuleFor(x => x.UserDto.StateId)
-                .GreaterThan(0).WithMessage("A valid StateId is required.");
-
-            // RoleId validation (optional, since it can be null)
-            RuleFor(x => x.UserDto.RoleId)
-                .GreaterThan(0).WithMessage("A valid StateId is required.");
-        }
-    }
-}
+//            //RuleFor(x => x.UserDto.StateId)
+//            //    .GreaterThan(0).When(x => x.UserDto.StateId.HasValue)
+//            //    .WithMessage("A valid StateId is required.");
+//        }
+//    }
+//}

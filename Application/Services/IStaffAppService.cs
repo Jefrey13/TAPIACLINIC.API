@@ -15,20 +15,22 @@ namespace Application.Services
         /// Creates a new staff member.
         /// </summary>
         /// <param name="command">The command containing staff creation data.</param>
-        /// <returns>The ID of the newly created staff member.</returns>
-        Task<int> CreateStaffAsync(CreateStaffCommand command);
+        /// <returns>Returns true if the staff member was created successfully.</returns>
+        Task<bool> CreateStaffAsync(CreateStaffCommand command);
 
         /// <summary>
         /// Updates an existing staff member.
         /// </summary>
         /// <param name="command">The command containing staff update data.</param>
-        Task UpdateStaffAsync(UpdateStaffCommand command);
+        /// <returns>Returns true if the staff member was updated successfully.</returns>
+        Task<bool> UpdateStaffAsync(UpdateStaffCommand command);
 
         /// <summary>
         /// Deletes a staff member by ID.
         /// </summary>
         /// <param name="command">The command containing the staff ID to delete.</param>
-        Task DeleteStaffAsync(DeleteStaffCommand command);
+        /// <returns>Returns true if the staff member was deleted successfully.</returns>
+        Task<bool> DeleteStaffAsync(DeleteStaffCommand command);
 
         /// <summary>
         /// Retrieves all staff members.
@@ -63,5 +65,12 @@ namespace Application.Services
         /// <param name="stateId">The state ID to filter staff members.</param>
         /// <returns>A list of staff members in the specified state.</returns>
         Task<IEnumerable<StaffResponseDto>> GetStaffByStateAsync(int stateId);
+
+        /// <summary>
+        /// Retrieves staff members by role.
+        /// </summary>
+        /// <param name="roleName">The role name to filter staff members.</param>
+        /// <returns>A list of staff members in the specified role.</returns>
+        Task<IEnumerable<StaffResponseDto>> GetStaffByRoleAsync(string roleName);
     }
 }

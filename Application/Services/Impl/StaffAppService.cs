@@ -24,8 +24,8 @@ namespace Application.Services.Impl
         /// Sends a command to create a new staff member.
         /// </summary>
         /// <param name="command">The command containing staff creation data.</param>
-        /// <returns>The ID of the newly created staff member.</returns>
-        public async Task<int> CreateStaffAsync(CreateStaffCommand command)
+        /// <returns>Returns true if the staff member was created successfully.</returns>
+        public async Task<bool> CreateStaffAsync(CreateStaffCommand command)
         {
             return await _mediator.Send(command);
         }
@@ -34,18 +34,20 @@ namespace Application.Services.Impl
         /// Sends a command to update an existing staff member.
         /// </summary>
         /// <param name="command">The command containing staff update data.</param>
-        public async Task UpdateStaffAsync(UpdateStaffCommand command)
+        /// <returns>Returns true if the staff member was updated successfully.</returns>
+        public async Task<bool> UpdateStaffAsync(UpdateStaffCommand command)
         {
-            await _mediator.Send(command);
+            return await _mediator.Send(command);
         }
 
         /// <summary>
         /// Sends a command to delete a staff member.
         /// </summary>
         /// <param name="command">The command containing the staff ID to delete.</param>
-        public async Task DeleteStaffAsync(DeleteStaffCommand command)
+        /// <returns>Returns true if the staff member was deleted successfully.</returns>
+        public async Task<bool> DeleteStaffAsync(DeleteStaffCommand command)
         {
-            await _mediator.Send(command);
+            return await _mediator.Send(command);
         }
 
         /// <summary>
@@ -95,6 +97,11 @@ namespace Application.Services.Impl
         public async Task<IEnumerable<StaffResponseDto>> GetStaffByStateAsync(int stateId)
         {
             return await _mediator.Send(new GetByStateQuery(stateId));
+        }
+
+        public async Task<IEnumerable<StaffResponseDto>> GetStaffByRoleAsync(string roleName)
+        {
+            return await _mediator.Send(new GetByRoleQuery(roleName));
         }
     }
 }

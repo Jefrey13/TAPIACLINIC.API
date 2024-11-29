@@ -6,7 +6,7 @@ namespace Application.Commands.Staffs
     /// <summary>
     /// Command to create a new staff member.
     /// </summary>
-    public class CreateStaffCommand : IRequest<int>
+    public class CreateStaffCommand : IRequest<bool>
     {
         public StaffRequestDto StaffDto { get; set; }
 

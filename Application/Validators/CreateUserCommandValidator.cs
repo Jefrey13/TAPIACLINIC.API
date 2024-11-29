@@ -50,8 +50,7 @@ namespace Application.Validators
 
             // Birth Date validation
             RuleFor(x => x.UserDto.BirthDate)
-                .NotEmpty().WithMessage("Birth date is required.")
-                .LessThanOrEqualTo(DateTime.Now.AddYears(-18)).WithMessage("User must be at least 18 years old.");
+                .NotEmpty().WithMessage("Birth date is required.");
 
             // ID Card validation
             RuleFor(x => x.UserDto.IdCard)

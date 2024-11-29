@@ -26,7 +26,7 @@ namespace Application.Commands.Exams
                 throw new NotFoundException(nameof(Exam), request.Id);
             }
 
-            await _examRepository.DeleteAsync(exam);
+            await _examRepository.ToggleActiveStateAsync(exam);
             return Unit.Value;
         }
     }

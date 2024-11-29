@@ -43,6 +43,12 @@ namespace Infrastructure.Data
             modelBuilder.Owned<Domain.ValueObjects.Email>();
             modelBuilder.Owned<PhoneNumber>();
 
+
+            //PatientCode Unique value
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.PatientCode)
+                .IsUnique();
+
             // Configure many-to-many relationship between roles and menus
             modelBuilder.Entity<RoleMenu>()
                 .HasKey(rm => rm.Id);  // Primary key for RoleMenu

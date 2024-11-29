@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Newtonsoft.Json;
+using Application.Models.RequestDtos.UpdateRequestDto;
 
 namespace API.Controllers
 {
@@ -36,15 +38,21 @@ namespace API.Controllers
         [HttpGet]
         public async Task<ActionResult<ApiResponse<IEnumerable<StaffResponseDto>>>> GetAllStaffs()
         {
-            var staffs = await _staffAppService.GetAllStaffsAsync();
-
-            if (staffs == null || !staffs.Any())
+            try
             {
-                return NotFound(new ApiResponse<IEnumerable<StaffResponseDto>>(false, "No staff members found", null, 404));
-            }
+                var staffs = await _staffAppService.GetAllStaffsAsync();
 
-            var response = new ApiResponse<IEnumerable<StaffResponseDto>>(true, "Staff members retrieved successfully", staffs, 200);
-            return Ok(response);
+                if (staffs == null || !staffs.Any())
+                {
+                    return ResponseHelper.NotFound<IEnumerable<StaffResponseDto>>("No staff members found.");
+                }
+
+                return ResponseHelper.Success(staffs, "Staff members retrieved successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<IEnumerable<StaffResponseDto>>($"An error occurred: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -57,17 +65,23 @@ namespace API.Controllers
         {
             if (id <= 0)
             {
-                return BadRequest(new ApiResponse<StaffResponseDto>(false, "Invalid staff ID", null, 400));
+                return ResponseHelper.BadRequest<StaffResponseDto>("Invalid staff ID.");
             }
 
-            var staff = await _staffAppService.GetStaffByIdAsync(id);
-            if (staff == null)
+            try
             {
-                return NotFound(new ApiResponse<StaffResponseDto>(false, "Staff member not found", null, 404));
-            }
+                var staff = await _staffAppService.GetStaffByIdAsync(id);
+                if (staff == null)
+                {
+                    return ResponseHelper.NotFound<StaffResponseDto>("Staff member not found.");
+                }
 
-            var response = new ApiResponse<StaffResponseDto>(true, "Staff member retrieved successfully", staff, 200);
-            return Ok(response);
+                return ResponseHelper.Success(staff, "Staff member retrieved successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<StaffResponseDto>($"An error occurred: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -80,17 +94,23 @@ namespace API.Controllers
         {
             if (userId <= 0)
             {
-                return BadRequest(new ApiResponse<StaffResponseDto>(false, "Invalid user ID", null, 400));
+                return ResponseHelper.BadRequest<StaffResponseDto>("Invalid user ID.");
             }
 
-            var staff = await _staffAppService.GetStaffByUserIdAsync(userId);
-            if (staff == null)
+            try
             {
-                return NotFound(new ApiResponse<StaffResponseDto>(false, "Staff member not found for this user", null, 404));
-            }
+                var staff = await _staffAppService.GetStaffByUserIdAsync(userId);
+                if (staff == null)
+                {
+                    return ResponseHelper.NotFound<StaffResponseDto>("Staff member not found for this user.");
+                }
 
-            var response = new ApiResponse<StaffResponseDto>(true, "Staff member retrieved successfully", staff, 200);
-            return Ok(response);
+                return ResponseHelper.Success(staff, "Staff member retrieved successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<StaffResponseDto>($"An error occurred: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -103,18 +123,24 @@ namespace API.Controllers
         {
             if (specialtyId <= 0)
             {
-                return BadRequest(new ApiResponse<IEnumerable<StaffResponseDto>>(false, "Invalid specialty ID", null, 400));
+                return ResponseHelper.BadRequest<IEnumerable<StaffResponseDto>>("Invalid specialty ID.");
             }
 
-            var staffs = await _staffAppService.GetStaffBySpecialtyIdAsync(specialtyId);
-
-            if (staffs == null || !staffs.Any())
+            try
             {
-                return NotFound(new ApiResponse<IEnumerable<StaffResponseDto>>(false, "No staff members found for this specialty", null, 404));
-            }
+                var staffs = await _staffAppService.GetStaffBySpecialtyIdAsync(specialtyId);
 
-            var response = new ApiResponse<IEnumerable<StaffResponseDto>>(true, "Staff members retrieved by specialty successfully", staffs, 200);
-            return Ok(response);
+                if (staffs == null || !staffs.Any())
+                {
+                    return ResponseHelper.NotFound<IEnumerable<StaffResponseDto>>("No staff members found for this specialty.");
+                }
+
+                return ResponseHelper.Success(staffs, "Staff members retrieved by specialty successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<IEnumerable<StaffResponseDto>>($"An error occurred: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -123,67 +149,99 @@ namespace API.Controllers
         /// <param name="staffDto">The staff member data to create.</param>
         /// <returns>The ID of the newly created staff member.</returns>
         [HttpPost]
-        [AllowAnonymous]
-        public async Task<ActionResult<ApiResponse<int>>> CreateStaff([FromBody] StaffRequestDto staffDto)
+        public async Task<ActionResult<ApiResponse<StaffResponseDto>>> CreateStaff([FromBody] StaffRequestDto staffDto)
         {
             if (staffDto == null)
             {
-                return BadRequest(new ApiResponse<int?>(false, "Staff data is required", null, 400));
+                return ResponseHelper.BadRequest<StaffResponseDto>("Staff data is required.");
             }
 
-            var createdStaffId = await _staffAppService.CreateStaffAsync(new CreateStaffCommand(staffDto));
-            var response = new ApiResponse<int>(true, "Staff created successfully", createdStaffId, 201);
-            return CreatedAtAction(nameof(GetStaffById), new { id = createdStaffId }, response);
-        }
+            try
+            {
+                var createdStaffId = await _staffAppService.CreateStaffAsync(new CreateStaffCommand(staffDto));
+                if (createdStaffId == false)
+                {
+                    return ResponseHelper.Error<StaffResponseDto>("Failed to create staff member.");
+                }
 
+                return ResponseHelper.Success(new StaffResponseDto(), "Staff created successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<StaffResponseDto>($"An error occurred: {ex.Message}");
+            }
+        }
         /// <summary>
         /// Updates an existing staff member.
         /// </summary>
         /// <param name="id">The ID of the staff member to update.</param>
         /// <param name="staffDto">The updated staff member data.</param>
-        /// <returns>No content if the update is successful, 400 if the ID mismatch occurs.</returns>
+        /// <returns>An ApiResponse indicating the result of the operation.</returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<string>>> UpdateStaff(int id, [FromBody] StaffRequestDto staffDto)
+        public async Task<ActionResult<ApiResponse<StaffResponseDto>>> UpdateStaff(int id, [FromBody] StaffUpdateRequestDto staffDto)
         {
             if (id <= 0 || staffDto == null)
             {
-                return BadRequest(new ApiResponse<string>(false, "Invalid staff ID or data", null, 400));
+                return ResponseHelper.BadRequest<StaffResponseDto>("Invalid staff ID or data.");
             }
 
-            var existingStaff = await _staffAppService.GetStaffByIdAsync(id);
-            if (existingStaff == null)
+            try
             {
-                return NotFound(new ApiResponse<string>(false, "Staff member not found", null, 404));
-            }
+                var existingStaff = await _staffAppService.GetStaffByIdAsync(id);
+                if (existingStaff == null)
+                {
+                    return ResponseHelper.NotFound<StaffResponseDto>("Staff member not found.");
+                }
 
-            await _staffAppService.UpdateStaffAsync(new UpdateStaffCommand(id, staffDto));
-            var response = new ApiResponse<string>(true, "Staff updated successfully", null, 200);
-            return Ok(response);
+                var isUpdated = await _staffAppService.UpdateStaffAsync(new UpdateStaffCommand(id, staffDto));
+                if (!isUpdated)
+                {
+                    return ResponseHelper.Error<StaffResponseDto>("Failed to update the staff member.");
+                }
+
+                return ResponseHelper.Success<StaffResponseDto>(new StaffResponseDto(), "Staff updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<StaffResponseDto>($"An error occurred: {ex.Message}");
+            }
         }
 
         /// <summary>
-        /// Deletes a staff member by their ID.
+        /// Updates the state of a staff member by their ID.
         /// </summary>
-        /// <param name="id">The ID of the staff member to delete.</param>
-        /// <returns>No content if the deletion is successful.</returns>
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<ApiResponse<string>>> DeleteStaff(int id)
+        /// <param name="id">The ID of the staff member whose state is to be updated.</param>
+        /// <returns>An ApiResponse indicating if the state update was successful.</returns>
+        [HttpPatch("{id}/change-state")]
+        public async Task<ActionResult<ApiResponse<StaffResponseDto>>> UpdateStaffState(int id)
         {
             if (id <= 0)
             {
-                return BadRequest(new ApiResponse<string>(false, "Invalid staff ID", null, 400));
+                return ResponseHelper.BadRequest<StaffResponseDto>("Invalid staff ID.");
             }
 
-            var existingStaff = await _staffAppService.GetStaffByIdAsync(id);
-            if (existingStaff == null)
+            try
             {
-                return NotFound(new ApiResponse<string>(false, "Staff member not found", null, 404));
-            }
+                var staffMember = await _staffAppService.GetStaffByIdAsync(id);
+                if (staffMember == null)
+                {
+                    return ResponseHelper.NotFound<StaffResponseDto>("Staff member not found.");
+                }
 
-            await _staffAppService.DeleteStaffAsync(new DeleteStaffCommand(id));
-            var response = new ApiResponse<string>(true, "Staff deleted successfully", null, 204);
-            return Ok(response);
+                var isUpdated = await _staffAppService.DeleteStaffAsync(new DeleteStaffCommand(id));
+                if (!isUpdated)
+                {
+                    return ResponseHelper.Error<StaffResponseDto>("Failed to update the staff member's state.");
+                }
+
+                return ResponseHelper.Success<StaffResponseDto>(new StaffResponseDto(), "Staff state updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<StaffResponseDto>($"An error occurred: {ex.Message}");
+            }
         }
+
         /// <summary>
         /// Retrieves all staff members with the specified state ID.
         /// </summary>
@@ -194,18 +252,52 @@ namespace API.Controllers
         {
             if (stateId <= 0)
             {
-                return BadRequest(new ApiResponse<IEnumerable<StaffResponseDto>>(false, "Invalid state ID", null, 400));
+                return ResponseHelper.BadRequest<IEnumerable<StaffResponseDto>>("Invalid state ID.");
             }
 
-            var staffs = await _staffAppService.GetStaffByStateAsync(stateId);
-
-            if (staffs == null || !staffs.Any())
+            try
             {
-                return NotFound(new ApiResponse<IEnumerable<StaffResponseDto>>(false, "No staff members found for the specified state", null, 404));
+                var staffs = await _staffAppService.GetStaffByStateAsync(stateId);
+                if (staffs == null || !staffs.Any())
+                {
+                    return ResponseHelper.NotFound<IEnumerable<StaffResponseDto>>("No staff members found for the specified state.");
+                }
+
+                return ResponseHelper.Success(staffs, "Staff members retrieved successfully by state.");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<IEnumerable<StaffResponseDto>>($"An error occurred: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Retrieves all staff members with the specified role.
+        /// </summary>
+        /// <param name="roleName">The role name of the staff members to retrieve.</param>
+        /// <returns>A list of StaffResponseDto objects representing staff members in the specified role.</returns>
+        [HttpGet("by-role/{roleName}")]
+        public async Task<ActionResult<ApiResponse<IEnumerable<StaffResponseDto>>>> GetStaffByRole(string roleName)
+        {
+            if (string.IsNullOrEmpty(roleName))
+            {
+                return ResponseHelper.BadRequest<IEnumerable<StaffResponseDto>>("Invalid role name.");
             }
 
-            var response = new ApiResponse<IEnumerable<StaffResponseDto>>(true, "Staff members retrieved by state successfully", staffs, 200);
-            return Ok(response);
+            try
+            {
+                var staffs = await _staffAppService.GetStaffByRoleAsync(roleName);
+                if (staffs == null || !staffs.Any())
+                {
+                    return ResponseHelper.NotFound<IEnumerable<StaffResponseDto>>("No staff members found for the specified role.");
+                }
+
+                return ResponseHelper.Success(staffs, "Staff members retrieved successfully by role.");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<IEnumerable<StaffResponseDto>>($"An error occurred: {ex.Message}");
+            }
         }
     }
 }

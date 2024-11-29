@@ -6,7 +6,7 @@ namespace Application.Commands.Users
     /// <summary>
     /// Command to create a new user.
     /// </summary>
-    public class CreateUserCommand : IRequest<int>
+    public class CreateUserCommand : IRequest<bool>
     {
         public UserRequestDto UserDto { get; set; }
 

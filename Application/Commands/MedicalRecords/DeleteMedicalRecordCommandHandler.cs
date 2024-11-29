@@ -38,7 +38,7 @@ namespace Application.Commands.MedicalRecords
                 throw new NotFoundException(nameof(MedicalRecord), request.Id);
             }
 
-            await _repository.DeleteAsync(medicalRecord);
+            await _repository.ToggleActiveStateAsync(medicalRecord);
             return Unit.Value;
         }
     }

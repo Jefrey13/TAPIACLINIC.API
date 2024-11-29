@@ -6,6 +6,8 @@ using API.Utils;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Application.Queries.Appointments;
+using Application.Services.Impl;
 
 namespace API.Controllers
 {
@@ -113,7 +115,7 @@ namespace API.Controllers
         /// </summary>
         /// <param name="id">The ID of the appointment to delete.</param>
         /// <returns>Confirmation that the deletion was successful.</returns>
-        [HttpDelete("{id}")]
+        [HttpPatch("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> DeleteAppointment(int id)
         {
             if (id <= 0)
@@ -153,6 +155,29 @@ namespace API.Controllers
             }
 
             var response = new ApiResponse<IEnumerable<AppointmentResponseDto>>(true, "Appointments retrieved by state successfully", appointments, 200);
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Updates the state of an appointment.
+        /// </summary>
+        /// <param name="id">The ID of the appointment to update.</param>
+        /// <param name="stateName">The new state name for the appointment (e.g., "Scheduled", "Completed").</param>
+        /// <returns>Confirmation that the state was successfully updated.</returns>
+        [HttpPatch("{id}/state")]
+        public async Task<ActionResult<ApiResponse<string>>> UpdateAppointmentState(int id, [FromBody] string stateName)
+        {
+            if (id <= 0 || string.IsNullOrWhiteSpace(stateName))
+            {
+                return BadRequest(new ApiResponse<string>(false, "Invalid appointment ID or state name", null, 400));
+            }
+
+            var jwtToken = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            await _appointmentAppService.UpdateAppointmentStateAsync(
+                new UpdateAppointmentStateCommand(id, stateName), jwtToken);
+
+            var response = new ApiResponse<string>(true, "Appointment state updated successfully", null, 200);
             return Ok(response);
         }
     }

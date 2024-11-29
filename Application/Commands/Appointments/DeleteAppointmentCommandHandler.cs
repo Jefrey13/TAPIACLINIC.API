@@ -26,7 +26,7 @@ namespace Application.Handlers.Appointments
                 throw new NotFoundException(nameof(Appointment), request.Id);
             }
 
-            await _appointmentRepository.DeleteAsync(appointment);
+            await _appointmentRepository.ToggleActiveStateAsync(appointment);
             return Unit.Value;
         }
     }

@@ -26,7 +26,7 @@ namespace Application.Handlers.Roles
                 throw new NotFoundException(nameof(Role), request.Id);
             }
 
-            await _roleRepository.DeleteAsync(role);
+            await _roleRepository.ToggleActiveStateAsync(role);
             return Unit.Value;
         }
     }

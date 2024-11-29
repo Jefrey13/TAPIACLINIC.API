@@ -3,15 +3,14 @@ using Application.Exceptions;
 using Domain.Entities;
 using Domain.Repositories;
 using MediatR;
-using System.Threading.Tasks;
 
-namespace Application.Commands.Staffs
+namespace Application.Handlers.Staffs
 {
     /// <summary>
-    /// Handler for deleting a staff member by ID.
-    /// The associated user is not deleted.
+    /// Handler for deleting a staff member.
+    /// Toggles the active state of the staff member.
     /// </summary>
-    public class DeleteStaffCommandHandler : IRequestHandler<DeleteStaffCommand, Unit>
+    public class DeleteStaffCommandHandler : IRequestHandler<DeleteStaffCommand, bool>
     {
         private readonly IStaffRepository _staffRepository;
 
@@ -20,20 +19,40 @@ namespace Application.Commands.Staffs
             _staffRepository = staffRepository;
         }
 
-        public async Task<Unit> Handle(DeleteStaffCommand request, CancellationToken cancellationToken)
+        public async Task<bool> Handle(DeleteStaffCommand request, CancellationToken cancellationToken)
         {
-            // Check if the staff member exists
-            var staff = await _staffRepository.GetByIdAsync(request.Id);
-
-            if (staff == null)
+            try
             {
-                throw new NotFoundException(nameof(Staff), request.Id);
+                // Validate the ID
+                if (request.Id <= 0)
+                {
+                    throw new ValidationException("Invalid staff ID.");
+                }
+
+                // Retrieve the staff member
+                var staff = await _staffRepository.GetByIdAsync(request.Id);
+                if (staff == null)
+                {
+                    throw new NotFoundException(nameof(Staff), request.Id);
+                }
+
+                // Toggle active state
+                await _staffRepository.ToggleActiveStateAsync(staff);
+
+                return true;
             }
-
-            // Delete the staff member but not the associated user
-            await _staffRepository.DeleteAsync(staff);
-
-            return Unit.Value; // Return Unit to indicate completion
+            catch (ValidationException ex)
+            {
+                throw new ValidationException($"Validation error: {ex.Message}");
+            }
+            catch (NotFoundException ex)
+            {
+                throw new NotFoundException($"Staff member not found: {ex.Message}", request.Id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An unexpected error occurred while deleting the staff member: {ex.Message}", ex);
+            }
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Application.Commands.Surgeries
                 throw new NotFoundException(nameof(Surgery), request.Id);
             }
 
-            await _surgeryRepository.DeleteAsync(surgery);
+            await _surgeryRepository.ToggleActiveStateAsync(surgery);
             return Unit.Value;
         }
     }

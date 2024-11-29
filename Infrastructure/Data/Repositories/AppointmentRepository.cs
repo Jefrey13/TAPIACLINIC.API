@@ -68,9 +68,40 @@ public class AppointmentRepository : BaseRepository<Appointment>, IAppointmentRe
             .Where(appointment => appointment.StateId == stateId)
             .Include(a => a.Patient)    //Include related entities
             .Include(a => a.Staff)
+            .Include(a => a.State)
             .Include(a => a.Specialty)
             .Include(a => a.Schedule)
             .AsNoTracking()
             .ToListAsync();
+    }
+
+    // Método para actualizar el estado de una cita usando el nombre del nuevo estado
+    public async Task<bool> UpdateAppointmentStateAsync(int appointmentId, string StateName)
+    {
+        // Buscar el nuevo estado por nombre
+        var newState = await _context.States.FirstOrDefaultAsync(s => s.Name == StateName);
+
+        // Verificar si el estado existe
+        if (newState == null)
+        {
+            return false; // Estado no encontrado
+        }
+
+        // Buscar la cita por ID
+        var appointment = await _context.Appointments.FindAsync(appointmentId);
+
+        // Verificar si la cita existe
+        if (appointment == null)
+        {
+            return false; // Cita no encontrada
+        }
+
+        // Actualizar el estado de la cita
+        appointment.StateId = newState.Id;
+
+        // Guardar los cambios en la base de datos
+        await _context.SaveChangesAsync();
+
+        return true; // Éxito
     }
 }

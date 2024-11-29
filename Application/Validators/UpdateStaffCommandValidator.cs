@@ -28,10 +28,10 @@ namespace Application.Commands.Staffs
                 .NotEmpty().WithMessage("Last Name is required.")
                 .MaximumLength(100).WithMessage("Last Name cannot exceed 100 characters.");
 
-            // Validate Email
-            RuleFor(x => x.StaffDto.User.Email)
-                .NotEmpty().WithMessage("Email is required.")
-                .EmailAddress().WithMessage("Invalid email format.");
+            //// Validate Email
+            //RuleFor(x => x.StaffDto.User.Email)
+            //    .NotEmpty().WithMessage("Email is required.")
+            //    .EmailAddress().WithMessage("Invalid email format.");
 
             // Validate that SpecialtyId is optional but must be valid if provided
             RuleFor(x => x.StaffDto.SpecialtyId)

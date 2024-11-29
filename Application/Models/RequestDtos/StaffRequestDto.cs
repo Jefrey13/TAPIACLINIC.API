@@ -10,7 +10,7 @@ namespace Application.Models.RequestDtos
     {
         public UserRequestDto User { get; set; }  // Datos del usuario
         public int? SpecialtyId { get; set; }
-        public string MinsaCode { get; set; }
+        public string? MinsaCode { get; set; }
         public int? YearsExperience { get; set; }
         public bool Active { get; set; }
     }

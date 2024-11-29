@@ -5,6 +5,7 @@ using API.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace API.Controllers
 {
@@ -28,17 +29,52 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Logs in a user and returns access and refresh tokens.
+        /// Inicia sesión para un usuario y devuelve los tokens de acceso y actualización.
         /// </summary>
-        /// <param name="request">The login request containing username and password.</param>
-        /// <returns>The login response with tokens if successful.</returns>
+        /// <param name="request">La solicitud de inicio de sesión que contiene nombre de usuario y contraseña.</param>
+        /// <returns>La respuesta del inicio de sesión con los tokens si es exitoso.</returns>
         [AllowAnonymous]
         [HttpPost("login")]
         public async Task<ActionResult<ApiResponse<object>>> Login([FromBody] LoginRequestDto request)
         {
-            var response = await _authService.LoginAsync(new LoginCommand(request));
-            var apiResponse = new ApiResponse<object>(true, "Login successful", response, 200);
-            return Ok(apiResponse);
+            if (request == null)
+            {
+                return BadRequest(new ApiResponse<object>(false, "La solicitud de inicio de sesión no puede estar vacía.", null, 400));
+            }
+
+            try
+            {
+                // Invocar el servicio de autenticación con el comando LoginCommand
+                var response = await _authService.LoginAsync(new LoginCommand(request));
+
+                // Verificar si la respuesta es válida
+                if (response == null)
+                {
+                    return Unauthorized(new ApiResponse<object>(false, "Credenciales de inicio de sesión inválidas.", null, 401));
+                }
+
+                // Retornar respuesta exitosa
+                var apiResponse = new ApiResponse<object>(true, "Inicio de sesión exitoso.", response, 200);
+                return Ok(apiResponse);
+            }
+            catch (ValidationException ex)
+            {
+                // Manejar excepciones de validación
+                return BadRequest(new ApiResponse<object>(false, $"Credenciales de inicio de sesión inválidas.: {ex.Message}", null, 400));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                // Manejar errores de acceso no autorizado
+                return Unauthorized(new ApiResponse<object>(false, $"No autorizado: {ex.Message}", null, 401));
+            }
+            catch (Exception ex)
+            {
+                // Manejar cualquier otra excepción
+                return StatusCode(500, new ApiResponse<object>(false, "Ocurrió un error inesperado.", null, 500)
+                {
+                    Errors = new Dictionary<string, string> { { "Excepción", ex.Message } }
+                });
+            }
         }
 
         /// <summary>
