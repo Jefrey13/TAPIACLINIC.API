@@ -11,7 +11,7 @@ public class User
     public int Id { get; set; }
 
     //[Required]
-    //public string PatientCode { get; set; }
+    public string? PatientCode { get; set; }
 
     [Required]
     [MaxLength(100)]

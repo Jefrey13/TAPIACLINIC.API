@@ -4,16 +4,19 @@ using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Infrastructure.Data.Migrations
+namespace Infrastructure.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241129112131_AddUniqueIndexesToUser")]
+    partial class AddUniqueIndexesToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -789,6 +792,7 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("PatientCode")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int?>("RoleId")
@@ -813,8 +817,7 @@ namespace Infrastructure.Data.Migrations
 
                     b.HasIndex("PatientCode")
                         .IsUnique()
-                        .HasDatabaseName("IX_User_PatientCode")
-                        .HasFilter("[PatientCode] IS NOT NULL");
+                        .HasDatabaseName("IX_User_PatientCode");
 
                     b.HasIndex("RoleId");
 

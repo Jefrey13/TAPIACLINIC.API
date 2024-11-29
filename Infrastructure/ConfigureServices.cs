@@ -34,6 +34,8 @@ namespace Infrastructure
             // Register Unit of Work
             //services.AddTransient<IUnitOfWork, UnitOfWork>();
 
+            services.AddMemoryCache();
+
             // Register repositories
             services.AddTransient<IAppointmentRepository, AppointmentRepository>();
             services.AddTransient<IConsultationExamRepository, ConsultationExamRepository>();

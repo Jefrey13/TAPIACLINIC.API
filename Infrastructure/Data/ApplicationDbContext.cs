@@ -1,6 +1,7 @@
 ﻿using Domain.Entities;
 using Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Infrastructure.Data
 {
@@ -43,11 +44,35 @@ namespace Infrastructure.Data
             modelBuilder.Owned<Domain.ValueObjects.Email>();
             modelBuilder.Owned<PhoneNumber>();
 
-
-            //PatientCode Unique value
+            // Unique index for PatientCode
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.PatientCode)
-                .IsUnique();
+                .IsUnique()
+                .HasDatabaseName("IX_User_PatientCode");
+
+            // Unique index for UserName
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.UserName)
+                .IsUnique()
+                .HasDatabaseName("IX_User_UserName");
+
+            // Configure value converter for Email
+            var emailConverter = new ValueConverter<Domain.ValueObjects.Email, string>(
+                email => email.Value, // Convert to string for storage
+                value => new Domain.ValueObjects.Email(value) // Convert back to Email when retrieving
+            );
+
+            // Configure value converter for PhoneNumber
+            var phoneConverter = new ValueConverter<Domain.ValueObjects.PhoneNumber, string>(
+                phone => phone.Value, // Convert to string for storage
+                value => new Domain.ValueObjects.PhoneNumber(value) // Convert back to PhoneNumber when retrieving
+            );
+
+            // Unique index for IdCard
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.IdCard)
+                .IsUnique()
+                .HasDatabaseName("IX_User_IdCard");
 
             // Configure many-to-many relationship between roles and menus
             modelBuilder.Entity<RoleMenu>()

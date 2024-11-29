@@ -16,10 +16,10 @@ namespace API.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserAppService _userAppService;
-
         public UsersController(IUserAppService userAppService)
         {
             _userAppService = userAppService;
+
         }
 
         /// <summary>
@@ -91,6 +91,10 @@ namespace API.Controllers
 
             try
             {
+                // Serializar e imprimir el objeto recibido en la consola
+                var serializedUserDto = System.Text.Json.JsonSerializer.Serialize(userDto);
+                Console.WriteLine($"Received user DTO: {serializedUserDto}");
+
                 var createdUser = await _userAppService.CreateUserAsync(new CreateUserCommand(userDto));
                 if (createdUser == null)
                 {
@@ -110,28 +114,28 @@ namespace API.Controllers
         /// <param name="id">El ID del usuario a actualizar.</param>
         /// <param name="userDto">El UserRequestDto que contiene los detalles actualizados del usuario.</param>
         /// <returns>Un ApiResponse que contiene el UserResponseDto del usuario actualizado.</returns>
-        //[HttpPut("{id}")]
-        //public async Task<ActionResult<ApiResponse<UserResponseDto>>> UpdateUser(int id, [FromBody] UserUpdateRequestDto userDto)
-        //{
-        //    if (id <= 0)
-        //    {
-        //        return ResponseHelper.BadRequest<UserResponseDto>("ID de usuario inválido");
-        //    }
+        [HttpPut("{id}")]
+        public async Task<ActionResult<ApiResponse<UserResponseDto>>> UpdateUser(int id, [FromBody] UserUpdateRequestDto userDto)
+        {
+            if (id <= 0)
+            {
+                return ResponseHelper.BadRequest<UserResponseDto>("ID de usuario inválido");
+            }
 
-        //    try
-        //    {
-        //        var updatedUser = await _userAppService.UpdateUserAsync(new UpdateUserCommand(id, userDto));
-        //        if (updatedUser == null)
-        //        {
-        //            return ResponseHelper.NotFound<UserResponseDto>("Usuario no encontrado");
-        //        }
-        //        return ResponseHelper.Success(new UserResponseDto(), "Usuario actualizado exitosamente");
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return ResponseHelper.Error<UserResponseDto>($"Ocurrió un error: {ex.Message}");
-        //    }
-        //}
+            try
+            {
+                var updatedUser = await _userAppService.UpdateUserAsync(new UpdateUserCommand(id, userDto));
+                if (updatedUser == null)
+                {
+                    return ResponseHelper.NotFound<UserResponseDto>("Usuario no encontrado");
+                }
+                return ResponseHelper.Success(new UserResponseDto(), "Usuario actualizado exitosamente");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<UserResponseDto>($"Ocurrió un error: {ex.Message}");
+            }
+        }
 
         /// <summary>
         /// Actualiza el estado de un usuario por su ID.

@@ -1,8 +1,10 @@
 ﻿using Domain.Entities;
 using Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 
 namespace Infrastructure.Data.Repositories
 {
@@ -12,7 +14,13 @@ namespace Infrastructure.Data.Repositories
     /// </summary>
     public class UserRepository : BaseRepository<User>, IUserRepository
     {
-        public UserRepository(ApplicationDbContext context) : base(context) { }
+        private readonly IMemoryCache _cache;
+        private ApplicationDbContext _context;
+        public UserRepository(ApplicationDbContext context, IMemoryCache cache) : base(context) 
+        {
+            _cache = cache;
+            _context = context;
+        }
 
         /// <summary>
         /// Validates if the UserName, Email, or IdCard are already in use.
@@ -43,24 +51,148 @@ namespace Infrastructure.Data.Repositories
         }
 
         /// <summary>
-        /// Adds a new user to the database after validating unique fields.
+        /// Generates a unique PatientCode based on the user's initials and a global sequential number.
+        /// Uses MemoryCache to store and manage the sequence.
         /// </summary>
-        /// <param name="user">The user entity to add.</param>
-        public override async Task AddAsync(User user)
+        /// <param name="firstName">The user's first name.</param>
+        /// <param name="lastName">The user's last name.</param>
+        /// <returns>A unique PatientCode.</returns>
+        private async Task<string> GeneratePatientCodeAsync(string firstName, string lastName)
         {
-            await ValidateUniqueFieldsAsync(user);
-            await base.AddAsync(user);
+            // Extract initials
+            string initials = $"{firstName[0]}{lastName[0]}".ToUpper();
+
+            // Retrieve the current sequence from the cache
+            int nextSequence;
+            if (!_cache.TryGetValue("PatientCodeSequence", out nextSequence))
+            {
+                // Load the last sequence from the database if not in cache
+                var lastPatient = await _context.Users
+                    .Where(u => u.RoleId == 4) // Only users with RoleId 4 (patients)
+                    .OrderByDescending(u => u.PatientCode)
+                    .FirstOrDefaultAsync();
+
+                // Determine the next sequence number
+                nextSequence = 1;
+                if (lastPatient != null && !string.IsNullOrEmpty(lastPatient.PatientCode))
+                {
+                    var parts = lastPatient.PatientCode.Split('-');
+                    if (parts.Length == 2 && int.TryParse(parts[1], out int lastSequence))
+                    {
+                        nextSequence = lastSequence + 1;
+                    }
+                }
+
+                // Store the sequence in the cache
+                _cache.Set("PatientCodeSequence", nextSequence);
+            }
+
+            // Increment and update the sequence in the cache
+            _cache.Set("PatientCodeSequence", ++nextSequence);
+
+            // Return the formatted PatientCode
+            return $"{initials}-{nextSequence}";
         }
 
         /// <summary>
-        /// Updates an existing user in the database after validating unique fields.
+        /// Adds a new user to the database while handling unique constraint violations.
+        /// This method ensures that database constraints for unique fields like UserName, Email, 
+        /// and IdCard are respected by catching and interpreting database exceptions.
+        /// If a unique constraint violation occurs, a detailed and user-friendly message is thrown.
+        /// For other unexpected errors, a general exception is thrown with additional details.
+        /// </summary>
+        /// <param name="user">The user entity to add.</param>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when a unique constraint violation occurs (e.g., duplicate UserName, Email, or IdCard)
+        /// or when an unexpected database error happens.
+        /// </exception>
+        public override async Task AddAsync(User user)
+        {
+            try
+            {
+                // Serializar e imprimir el objeto recibido en la consola
+                var serializedUser = System.Text.Json.JsonSerializer.Serialize(user);
+                Console.WriteLine($"Adding user en el repositorio: {serializedUser}");
+
+                // Generate PatientCode if the user is a patient (RoleId == 4)
+                if (user.RoleId == 4) // Ensure this only applies to patients
+                {
+                    user.PatientCode = await GeneratePatientCodeAsync(user.FirstName, user.LastName);
+                }
+
+                //await ValidateUniqueFieldsAsync(user);
+                await base.AddAsync(user);
+            }
+            catch (DbUpdateException ex)
+            {
+                if (ex.InnerException != null && ex.InnerException.Message.Contains("IX_User_UserName"))
+                {
+                    throw new InvalidOperationException($"El nombre de usuario '{user.UserName}' ya está en uso.");
+                }
+                if (ex.InnerException != null && ex.InnerException.Message.Contains("IX_User_Email"))
+                {
+                    throw new InvalidOperationException($"El correo electrónico '{user.Email.Value}' ya está en uso.");
+                }
+                if (ex.InnerException != null && ex.InnerException.Message.Contains("IX_User_IdCard"))
+                {
+                    throw new InvalidOperationException($"La cédula de identidad '{user.IdCard}' ya está registrada.");
+                }
+                throw new InvalidOperationException(
+                    "Se produjo un error inesperado al guardar los datos del usuario. Por favor, intenta de nuevo o contacta al administrador del sistema.",
+                    ex);
+            }
+        }
+
+        /// <summary>
+        /// Updates an existing user in the database while handling unique constraint violations.
+        /// This method ensures that database constraints for unique fields like UserName, Email, 
+        /// and IdCard are respected by catching and interpreting database exceptions.
+        /// If a unique constraint violation occurs, a detailed and user-friendly message is thrown.
+        /// For other unexpected errors, a general exception is thrown with additional details.
         /// </summary>
         /// <param name="user">The user entity to update.</param>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when a unique constraint violation occurs (e.g., duplicate UserName, Email, or IdCard)
+        /// or when an unexpected database error happens.
+        /// </exception>
         public override async Task UpdateAsync(User user)
         {
-            await ValidateUniqueFieldsAsync(user);
-            await base.UpdateAsync(user);
+            try
+            {
+                // Call the base update method to persist changes
+                await base.UpdateAsync(user);
+            }
+            catch (DbUpdateException ex) when (ex.InnerException != null && ex.InnerException.Message.Contains("IX_User_UserName"))
+            {
+                throw new InvalidOperationException($"El nombre de usuario '{user.UserName}' ya está en uso.");
+            }
+            catch (DbUpdateException ex) when (ex.InnerException != null && ex.InnerException.Message.Contains("IX_User_Email"))
+            {
+                throw new InvalidOperationException($"El correo electrónico '{user.Email.Value}' ya está en uso.");
+            }
+            catch (DbUpdateException ex) when (ex.InnerException != null && ex.InnerException.Message.Contains("IX_User_IdCard"))
+            {
+                throw new InvalidOperationException($"La cédula de identidad '{user.IdCard}' ya está registrada.");
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new InvalidOperationException(
+                    "Se produjo un error inesperado al actualizar los datos del usuario. Por favor, intenta de nuevo o contacta al administrador del sistema.",
+                    ex);
+            }
+            catch (ArgumentNullException ex)
+            {
+                throw new ArgumentException("Uno o más parámetros requeridos son nulos. Verifica los datos ingresados.", ex);
+            }
+            catch (Exception ex)
+            {
+                // Generic exception handler
+                throw new Exception("Ocurrió un error inesperado. Por favor, contacta al administrador del sistema.", ex);
+            }
         }
+
+
+
 
         /// <summary>
         /// Retrieves a user by their email address.
