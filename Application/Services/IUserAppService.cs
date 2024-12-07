@@ -16,7 +16,7 @@ namespace Application.Services
         /// </summary>
         /// <param name="command">The command containing the user data to be created.</param>
         /// <returns>Returns true if the user was created successfully.</returns>
-        Task<bool> CreateUserAsync(CreateUserCommand command);
+        Task<bool> CreateUserAsync(CreateUserCommand command, string recaptchaToken);
 
         /// <summary>
         /// Updates an existing user in the system.
@@ -24,6 +24,13 @@ namespace Application.Services
         /// <param name="command">The command containing the updated user data.</param>
         /// <returns>Returns true if the user was updated successfully.</returns>
         Task<bool> UpdateUserAsync(UpdateUserCommand command);
+
+        /// <summary>
+        /// Updates the account activation status of a user based on their email.
+        /// </summary>
+        /// <param name="command">The command containing the updated user data.</param>
+        /// <returns>Returns true if the user was updated successfully.</returns>
+        Task<bool> UpdateUserIsAccountActivatedAsync(UpdateUserIsAccountActivatedCommand command);
 
         /// <summary>
         /// Deletes a user from the system by their ID.
@@ -46,5 +53,8 @@ namespace Application.Services
         Task<UserResponseDto> GetUserByIdAsync(int id);
 
         Task<IEnumerable<UserResponseDto>> GetUsersByStateAsync(int stateId);
+
+
+
     }
 }

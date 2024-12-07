@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Application.Models.RequestDtos;
+using Domain.Entities;
 using System.Collections.Generic;
 using System.Security.Claims;
 
@@ -19,6 +20,21 @@ namespace Application.Services
         string GenerateAccessToken(User user);
 
         /// <summary>
+        /// Generates an activation token using user details.
+        /// </summary>
+        /// <param name="contactRequestDto">The request object containing contact details.</param>
+        /// <returns>A JWT string for activation purposes.</returns>
+        string GenerateActivationToken(string email);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+
+        ClaimsPrincipal ValidateActivationToken(string token);
+
+        /// <summary>
         /// Generates a secure refresh token, which is a random value used to refresh an expired access token.
         /// </summary>
         /// <returns>A string representing the generated refresh token.</returns>
@@ -31,6 +47,9 @@ namespace Application.Services
         /// <param name="token">The expired JWT token.</param>
         /// <returns>A ClaimsPrincipal containing the user identity (claims).</returns>
         ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
+
+
+        string GetEmailFromToken(string token);
 
         /// <summary>
         /// Extracts the username from a valid JWT token.

@@ -2,6 +2,7 @@
 using Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -159,30 +160,30 @@ namespace Infrastructure.Data.Repositories
         {
             try
             {
-                // Call the base update method to persist changes
-                await base.UpdateAsync(user);
-            }
-            catch (DbUpdateException ex) when (ex.InnerException != null && ex.InnerException.Message.Contains("IX_User_UserName"))
-            {
-                throw new InvalidOperationException($"El nombre de usuario '{user.UserName}' ya está en uso.");
-            }
-            catch (DbUpdateException ex) when (ex.InnerException != null && ex.InnerException.Message.Contains("IX_User_Email"))
-            {
-                throw new InvalidOperationException($"El correo electrónico '{user.Email.Value}' ya está en uso.");
-            }
-            catch (DbUpdateException ex) when (ex.InnerException != null && ex.InnerException.Message.Contains("IX_User_IdCard"))
-            {
-                throw new InvalidOperationException($"La cédula de identidad '{user.IdCard}' ya está registrada.");
+                // Recuperar el usuario existente desde la base de datos
+                var existingUser = await _context.Users.FindAsync(user.Id);
+
+                if (existingUser == null)
+                {
+                    throw new Exception($"Usuario con ID {user.Id} no encontrado.");
+                }
+
+                // Actualizar únicamente los campos especificados
+                existingUser.FirstName = user.FirstName;
+                existingUser.LastName = user.LastName;
+                existingUser.Address = user.Address;
+                existingUser.Gender = user.Gender;
+                existingUser.BirthDate = user.BirthDate;
+                existingUser.StateId = user.StateId;
+                existingUser.HasAcceptedTermsAndConditions = true;
+                existingUser.UpdatedAt = DateTime.Now;
+
+                // Guardar los cambios en la base de datos
             }
             catch (DbUpdateException ex)
             {
-                throw new InvalidOperationException(
-                    "Se produjo un error inesperado al actualizar los datos del usuario. Por favor, intenta de nuevo o contacta al administrador del sistema.",
-                    ex);
-            }
-            catch (ArgumentNullException ex)
-            {
-                throw new ArgumentException("Uno o más parámetros requeridos son nulos. Verifica los datos ingresados.", ex);
+                // Mostrar detalles del InnerException
+                throw new Exception($"Error al actualizar el usuario: {ex.InnerException?.Message ?? ex.Message}", ex);
             }
             catch (Exception ex)
             {
@@ -190,6 +191,7 @@ namespace Infrastructure.Data.Repositories
                 throw new Exception("Ocurrió un error inesperado. Por favor, contacta al administrador del sistema.", ex);
             }
         }
+
 
 
 
@@ -273,5 +275,21 @@ namespace Infrastructure.Data.Repositories
                 .ToListAsync();
         }
 
+        public async Task<bool> UpdateUserIsAccountActivated(string email)
+        {
+            User user = await GetUserByEmailAsync(email);
+
+            if (user != null)
+            {
+                user.IsAccountActivated = true;
+                
+
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+
+            return false;
+        }
     }
 }

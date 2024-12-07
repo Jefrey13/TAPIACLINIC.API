@@ -82,7 +82,7 @@ namespace API.Controllers
         /// <returns>Un ApiResponse que contiene el UserResponseDto del usuario creado.</returns>
         [HttpPost]
         [AllowAnonymous]
-        public async Task<ActionResult<ApiResponse<UserResponseDto>>> CreateUser([FromBody] UserRequestDto userDto)
+        public async Task<ActionResult<ApiResponse<UserResponseDto>>> CreateUser([FromBody] UserRequestDto userDto, [FromHeader(Name = "RecaptchaToken")] string recaptchaToken)
         {
             if (!ModelState.IsValid)
             {
@@ -95,7 +95,13 @@ namespace API.Controllers
                 var serializedUserDto = System.Text.Json.JsonSerializer.Serialize(userDto);
                 Console.WriteLine($"Received user DTO: {serializedUserDto}");
 
-                var createdUser = await _userAppService.CreateUserAsync(new CreateUserCommand(userDto));
+                var createdUser = await _userAppService.CreateUserAsync(new CreateUserCommand(userDto), recaptchaToken);
+
+                // Si reCAPTCHA es inválido, retornamos un error
+                if (!createdUser)
+                {
+                    return ResponseHelper.Error<UserResponseDto>("reCAPTCHA Invalido. Su intento no fue válido, por favor intente de nuevo.");
+                }
                 if (createdUser == null)
                 {
                     return ResponseHelper.Error<UserResponseDto>("Error al crear el usuario");

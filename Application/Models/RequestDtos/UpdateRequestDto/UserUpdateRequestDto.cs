@@ -11,10 +11,9 @@ namespace Application.Models.RequestDtos.UpdateRequestDto
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string Address { get; set; }
-        public string PhoneAddress { get; set; }
+        //public string PhoneAddress { get; set; }
         public string Gender { get; set; }  // "Male", "Female", etc.
         public DateTime BirthDate { get; set; }
         public int StateId { get; set; }  // Relación con el estado
-        //public int? RoleId { get; set; }   // Relación con el rol
     }
 }

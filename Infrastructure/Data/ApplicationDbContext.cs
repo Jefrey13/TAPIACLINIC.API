@@ -62,12 +62,6 @@ namespace Infrastructure.Data
                 value => new Domain.ValueObjects.Email(value) // Convert back to Email when retrieving
             );
 
-            // Configure value converter for PhoneNumber
-            var phoneConverter = new ValueConverter<Domain.ValueObjects.PhoneNumber, string>(
-                phone => phone.Value, // Convert to string for storage
-                value => new Domain.ValueObjects.PhoneNumber(value) // Convert back to PhoneNumber when retrieving
-            );
-
             // Unique index for IdCard
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.IdCard)

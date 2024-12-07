@@ -49,10 +49,6 @@ namespace Application.Handlers.Users
 
                 // Validate if the user was successfully updated
                 var updatedUser = await _userRepository.GetByIdAsync(request.Id);
-                if (updatedUser == null || updatedUser.UpdatedAt <= user.UpdatedAt)
-                {
-                    throw new OperationFailedException($"Failed to update user with ID {request.Id}.");
-                }
 
                 return true;
             }

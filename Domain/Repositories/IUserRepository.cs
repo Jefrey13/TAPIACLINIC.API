@@ -9,4 +9,6 @@ public interface IUserRepository : IRepository<User>
     Task UpdatePasswordAsync(User user);
 
     Task<IEnumerable<User>> GetByStateAsync(int stateId);
+
+    Task<bool> UpdateUserIsAccountActivated(string email);
 }

@@ -10,5 +10,7 @@
         /// <param name="body">Email body content.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         Task SendEmailAsync(string to, string subject, string body);
+
+        Task SendEmailFromUserAsync(string from, string subject, string body);
     }
 }

@@ -25,5 +25,9 @@ namespace API.Utils
         {
             return Error<T>(message, 400, errors);
         }
+        public static ActionResult<ApiResponse<T>> Unauthorized<T>(string message = "No autorizado", Dictionary<string, string> errors = null)
+        {
+            return Error<T>(message, 401, errors);
+        }
     }
 }

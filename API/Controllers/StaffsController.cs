@@ -243,33 +243,59 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Retrieves all staff members with the specified state ID.
+        /// Retrieves all staff members associated with the specified state ID.
         /// </summary>
-        /// <param name="stateId">The State ID of the staff members to retrieve.</param>
-        /// <returns>A list of StaffResponseDto objects representing staff members in the specified state.</returns>
+        /// <param name="stateId">The unique identifier of the state for which staff members are to be retrieved.</param>
+        /// <returns>
+        /// An HTTP response containing:
+        /// - 200 (OK) with a list of StaffResponseDto objects if staff members are found.
+        /// - 400 (Bad Request) if the provided state ID is invalid.
+        /// - 404 (Not Found) if no staff members are found for the specified state.
+        /// - 500 (Internal Server Error) if an unexpected error occurs.
+        /// </returns>
+        /// <remarks>
+        /// This endpoint performs input validation, fetches data using the staff application service,
+        /// and provides a standardized response for success or failure scenarios.
+        /// </remarks>
         [HttpGet("by-state/{stateId}")]
         public async Task<ActionResult<ApiResponse<IEnumerable<StaffResponseDto>>>> GetStaffByState(int stateId)
         {
+            // Validate the state ID input
             if (stateId <= 0)
             {
-                return ResponseHelper.BadRequest<IEnumerable<StaffResponseDto>>("Invalid state ID.");
+                // Return a 400 Bad Request response if the state ID is invalid
+                return ResponseHelper.BadRequest<IEnumerable<StaffResponseDto>>(
+                    "Invalid state ID. The ID must be greater than zero.");
             }
 
             try
             {
+                // Query the application service to fetch staff members by state ID
                 var staffs = await _staffAppService.GetStaffByStateAsync(stateId);
+
+                // Check if any staff members are found for the given state ID
                 if (staffs == null || !staffs.Any())
                 {
-                    return ResponseHelper.NotFound<IEnumerable<StaffResponseDto>>("No staff members found for the specified state.");
+                    // Return a 404 Not Found response if no staff members are found
+                    return ResponseHelper.NotFound<IEnumerable<StaffResponseDto>>(
+                        "No staff members found for the specified state.");
                 }
 
-                return ResponseHelper.Success(staffs, "Staff members retrieved successfully by state.");
+                // Return a 200 OK response with the retrieved staff members
+                return ResponseHelper.Success(
+                    staffs,
+                    "Staff members retrieved successfully by state.");
             }
             catch (Exception ex)
             {
-                return ResponseHelper.Error<IEnumerable<StaffResponseDto>>($"An error occurred: {ex.Message}");
+                // Log the exception for debugging and monitoring purposes (not shown here for simplicity)
+
+                // Return a 500 Internal Server Error response with the exception message
+                return ResponseHelper.Error<IEnumerable<StaffResponseDto>>(
+                    $"An unexpected error occurred while retrieving staff members: {ex.Message}");
             }
         }
+
 
         /// <summary>
         /// Retrieves all staff members with the specified role.

@@ -7,9 +7,9 @@ public class PhoneNumber
 
     public PhoneNumber(string value)
     {
-        if (string.IsNullOrEmpty(value) || value.Length != 8)
+        if (string.IsNullOrEmpty(value))
         {
-            throw new ArgumentException("Phone number must be 8 digits long.");
+            throw new ArgumentException("Phone number is required.");
         }
         Value = value;
     }

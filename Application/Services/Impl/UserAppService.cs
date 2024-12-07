@@ -2,6 +2,7 @@
 using Application.Models.ReponseDtos;
 using Application.Queries.Users;
 using AutoMapper;
+using Domain.Entities;
 using MediatR;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -34,8 +35,15 @@ namespace Application.Services.Impl
         /// </summary>
         /// <param name="command">Command with user creation details.</param>
         /// <returns>Returns true if the user was created successfully.</returns>
-        public async Task<bool> CreateUserAsync(CreateUserCommand command)
+        public async Task<bool> CreateUserAsync(CreateUserCommand command, string recaptchaToken)
         {
+            // Verificar el token de reCAPTCHA antes de continuar con el registro
+            var isRecaptchaValid = await _mediator.Send(new VerifyRecaptchaCommand(recaptchaToken));
+            if (!isRecaptchaValid)
+            {
+                return false; // Si el reCAPTCHA no es válido, no registrar al usuario
+            }
+            // Si el reCAPTCHA es válido, continuar con la lógica de creación del usuario
             return await _mediator.Send(command); // Correcto, retorna un valor booleano indicando éxito o fallo
         }
 
@@ -85,6 +93,11 @@ namespace Application.Services.Impl
         public async Task<IEnumerable<UserResponseDto>> GetUsersByStateAsync(int stateId)
         {
             return await _mediator.Send(new GetUsersByStateQuery(stateId));
+        }
+
+        public async Task<bool> UpdateUserIsAccountActivatedAsync(UpdateUserIsAccountActivatedCommand command)
+        {
+            return await _mediator.Send(command);
         }
     }
 }

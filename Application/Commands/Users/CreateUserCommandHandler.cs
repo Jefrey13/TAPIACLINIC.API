@@ -58,6 +58,8 @@ namespace Application.Handlers.Users
                 user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
 
                 // Set creation and update timestamps
+                user.RoleId = 4;
+                user.StateId = 1;
                 user.CreatedAt = DateTime.Now;
                 user.UpdatedAt = DateTime.Now;
 

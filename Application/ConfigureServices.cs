@@ -41,6 +41,7 @@ namespace Application
             services.AddTransient<IMedicalRecordAppService, MedicalRecordAppService>();
             services.AddTransient<IMenuAppService, MenuAppService>();
             services.AddTransient<IStateAppService, StateAppService>();
+            services.AddTransient<IContactService, ContactService>();
 
             return services;
         }

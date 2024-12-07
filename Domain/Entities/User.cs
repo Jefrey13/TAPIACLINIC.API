@@ -48,6 +48,18 @@ public class User
     [MaxLength(20)]
     public string IdCard { get; set; }
 
+    //Opcion para validar si la cuenta esta activa o si no lo esta aun.
+
+
+    // Indicates whether the user's account is activated.
+   public bool? IsAccountActivated { get; set; }
+
+
+    // Indicates whether the user has accepted the terms and conditions during login.
+
+    public bool? HasAcceptedTermsAndConditions { get; set; } = true;
+
+
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public DateTime UpdatedAt { get; set; } = DateTime.Now;

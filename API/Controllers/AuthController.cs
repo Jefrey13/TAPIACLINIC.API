@@ -6,6 +6,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using Application.Commands.Users;
+using Application.Models.ReponseDtos;
+using Application.Models.RequestDtos.UpdateRequestDto;
+using Application.Services.Impl;
+using Application.Models.ResponseDtos;
+using Sprache;
 
 namespace API.Controllers
 {
@@ -18,6 +24,7 @@ namespace API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IUserAppService _userAppService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthController"/> class.
@@ -32,48 +39,60 @@ namespace API.Controllers
         /// Inicia sesión para un usuario y devuelve los tokens de acceso y actualización.
         /// </summary>
         /// <param name="request">La solicitud de inicio de sesión que contiene nombre de usuario y contraseña.</param>
+        /// <param name="recaptchaToken">El token de reCAPTCHA proporcionado en el encabezado de la solicitud.</param>
         /// <returns>La respuesta del inicio de sesión con los tokens si es exitoso.</returns>
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<ActionResult<ApiResponse<object>>> Login([FromBody] LoginRequestDto request)
+        public async Task<ActionResult<ApiResponse<LoginResponseDto>>> Login(
+            [FromBody] LoginRequestDto request,
+            [FromHeader(Name = "RecaptchaToken")] string recaptchaToken)
         {
-            if (request == null)
+            // Validar si el modelo de datos es válido
+            if (!ModelState.IsValid)
             {
-                return BadRequest(new ApiResponse<object>(false, "La solicitud de inicio de sesión no puede estar vacía.", null, 400));
+                var errorMessages = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                // Respuesta uniforme con ResponseHelper
+                return ResponseHelper.BadRequest<LoginResponseDto>(string.Join("; ", errorMessages));
+            }
+
+            // Validar el token de reCAPTCHA
+            if (string.IsNullOrEmpty(recaptchaToken))
+            {
+                return ResponseHelper.BadRequest<LoginResponseDto>("El token de reCAPTCHA es obligatorio.");
             }
 
             try
             {
                 // Invocar el servicio de autenticación con el comando LoginCommand
-                var response = await _authService.LoginAsync(new LoginCommand(request));
+                var loginResponse = await _authService.LoginAsync(new LoginCommand(request), recaptchaToken);
 
                 // Verificar si la respuesta es válida
-                if (response == null)
+                if (loginResponse == null)
                 {
-                    return Unauthorized(new ApiResponse<object>(false, "Credenciales de inicio de sesión inválidas.", null, 401));
+                    return ResponseHelper.Unauthorized<LoginResponseDto>("Credenciales de inicio de sesión inválidas o reCAPTCHA fallido.");
                 }
 
-                // Retornar respuesta exitosa
-                var apiResponse = new ApiResponse<object>(true, "Inicio de sesión exitoso.", response, 200);
-                return Ok(apiResponse);
+                // Retornar respuesta exitosa directamente con LoginResponseDto
+                return ResponseHelper.Success(loginResponse, "Inicio de sesión exitoso.");
             }
             catch (ValidationException ex)
             {
                 // Manejar excepciones de validación
-                return BadRequest(new ApiResponse<object>(false, $"Credenciales de inicio de sesión inválidas.: {ex.Message}", null, 400));
+                return ResponseHelper.BadRequest<LoginResponseDto>($"Credenciales inválidas: {ex.Message}");
             }
             catch (UnauthorizedAccessException ex)
             {
                 // Manejar errores de acceso no autorizado
-                return Unauthorized(new ApiResponse<object>(false, $"No autorizado: {ex.Message}", null, 401));
+                return ResponseHelper.Unauthorized<LoginResponseDto>($"No autorizado: {ex.Message}");
             }
             catch (Exception ex)
             {
-                // Manejar cualquier otra excepción
-                return StatusCode(500, new ApiResponse<object>(false, "Ocurrió un error inesperado.", null, 500)
-                {
-                    Errors = new Dictionary<string, string> { { "Excepción", ex.Message } }
-                });
+                // Manejar cualquier otra excepción inesperada
+                return ResponseHelper.Error<LoginResponseDto>($"Ocurrió un error inesperado: {ex.Message}");
             }
         }
 
@@ -111,5 +130,90 @@ namespace API.Controllers
             var errorResponse = new ApiResponse<string>(false, "Error changing password", null, 400);
             return BadRequest(errorResponse);
         }
+
+        /// <summary>
+        /// Activates a user's account and sends an activation message.
+        /// </summary>
+        /// <param name="contactRequestDto">The request object containing contact details.</param>
+        /// <returns>An API response with the operation result.</returns>
+        [HttpPost("SendMessage")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ApiResponse<ServiceResult>>> SendMessage([FromBody] EmailContactRequestDto request)
+        {
+            if (!ModelState.IsValid)
+            {
+                // Extrae los mensajes de error de ModelState
+                var errorMessages = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                return ResponseHelper.BadRequest<ServiceResult>(string.Join("; ", errorMessages));
+            }
+
+            try
+            {
+                var activationResult = await _authService.SendMessageAsync(request.Email);
+
+                // Si reCAPTCHA es inválido, retornamos un error
+                if (!activationResult.Success)
+                {
+                    return ResponseHelper.Error<ServiceResult>("reCAPTCHA Invalido. Su intento no fue válido, por favor intente de nuevo.");
+                }
+                if (activationResult == null)
+                {
+                    return ResponseHelper.Error<ServiceResult>("Error al crear el usuario");
+                }
+                if (activationResult == null || !activationResult.Success)
+                {
+                    return ResponseHelper.NotFound<ServiceResult>("Usuario no encontrado o activación fallida.");
+                }
+
+                return ResponseHelper.Success(activationResult, "El mensaje de activación se envió correctamente.");
+            }
+            catch (Exception ex)
+            {
+                // Log exception (assumes a logging mechanism exists)
+                //_logger.LogError(ex, "An error occurred during account activation.");
+
+                return ResponseHelper.Error<ServiceResult>($"Ocurrió un error inesperado.Por favor, intente mas tarde.");
+            }
+        }
+
+        /// <summary>
+        /// Activates a user's account and sends an activation message.
+        /// </summary>
+        /// <param name="contactRequestDto">The request object containing contact details.</param>
+        /// <returns>An API response with the operation result.</returns>
+        //[HttpPatch("ActivateAccount")]
+        [HttpGet("ActivateAccount/{token}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<ApiResponse<ServiceResult>>> ActivateAccount(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                return ResponseHelper.BadRequest<ServiceResult>("El token de activacion no ha sido proporcionado.");
+            }
+
+            try
+            {
+                var activationResult = await _authService.ActivateAccount(token);
+
+                if (activationResult == null || !activationResult.Success)
+                {
+                    return ResponseHelper.NotFound<ServiceResult>("Usuario no encontrado o activación fallida.");
+                }
+
+                return ResponseHelper.Success(activationResult, "El mensaje de activación se envió correctamente.");
+            }
+            catch (Exception ex)
+            {
+                // Log exception (assumes a logging mechanism exists)
+                //_logger.LogError(ex, "An error occurred during account activation.");
+
+                return ResponseHelper.Error<ServiceResult>($"Ocurrió un error inesperado. Por favor, intente mas tarde.");
+            }
+        }
+
     }
 }

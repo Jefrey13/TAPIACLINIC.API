@@ -8,6 +8,7 @@ using Infrastructure.Data.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Application.Services;
 using Application.Services.Impl;
+using Infrastructure.Recaptcha;
 //using Infrastructure.Data.UnitOfWork.Impl;
 //using Infrastructure.Data.UnitOfWork;
 
@@ -21,6 +22,11 @@ namespace Infrastructure
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DbConnectionString")
                 ?? throw new InvalidOperationException("Database connection string 'DbConnectionString' is not configured or is null.")));
+
+            //Recaptcha
+            services.Configure<RecaptchaSettings>(configuration.GetSection("Recaptcha"));
+
+            services.AddScoped<IRecaptchaService, RecaptchaService>();
 
             // Register JWT token service
             services.AddTransient<IJwtTokenService, JwtTokenService>();
@@ -56,6 +62,7 @@ namespace Infrastructure
             services.AddTransient<ITokenRepository, TokenRepository>();
             services.AddTransient<IUserRepository, UserRepository>();
             services.AddTransient<IEmailSender, SmtpEmailSender>();
+
 
             return services;
         }

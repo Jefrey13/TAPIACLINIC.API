@@ -9,7 +9,6 @@ namespace Application.Commands.Users
     public class CreateUserCommand : IRequest<bool>
     {
         public UserRequestDto UserDto { get; set; }
-
         public CreateUserCommand(UserRequestDto userDto)
         {
             UserDto = userDto;

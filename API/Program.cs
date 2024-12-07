@@ -20,6 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Registra los servicios de la capa de aplicación
 builder.Services.AddApplicationServices(builder.Configuration);
 
+
 // Registra los servicios de la capa de infraestructura con su configuración
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
