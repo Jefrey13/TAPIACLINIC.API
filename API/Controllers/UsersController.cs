@@ -82,37 +82,89 @@ namespace API.Controllers
         /// <returns>Un ApiResponse que contiene el UserResponseDto del usuario creado.</returns>
         [HttpPost]
         [AllowAnonymous]
-        public async Task<ActionResult<ApiResponse<UserResponseDto>>> CreateUser([FromBody] UserRequestDto userDto, [FromHeader(Name = "RecaptchaToken")] string recaptchaToken)
+        public async Task<ActionResult<ApiResponse<UserResponseDto>>> CreateUser(
+            [FromBody] UserRequestDto userDto,
+            [FromHeader(Name = "RecaptchaToken")] string recaptchaToken)
         {
+            // Validar el modelo recibido
             if (!ModelState.IsValid)
             {
+                // Extraer errores de ModelState y retornarlos en la respuesta
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
                 return ResponseHelper.BadRequest<UserResponseDto>("Datos de usuario inválidos");
             }
 
             try
             {
-                // Serializar e imprimir el objeto recibido en la consola
+                // Serializar e imprimir el objeto recibido para depuración
                 var serializedUserDto = System.Text.Json.JsonSerializer.Serialize(userDto);
                 Console.WriteLine($"Received user DTO: {serializedUserDto}");
 
-                var createdUser = await _userAppService.CreateUserAsync(new CreateUserCommand(userDto), recaptchaToken);
+                // Crear el usuario llamando al servicio de aplicación
+                var userCreated = await _userAppService.CreateUserAsync(new CreateUserCommand(userDto), recaptchaToken);
 
-                // Si reCAPTCHA es inválido, retornamos un error
-                if (!createdUser)
+                // Validar la respuesta del servicio
+                if (userCreated == null)
                 {
-                    return ResponseHelper.Error<UserResponseDto>("reCAPTCHA Invalido. Su intento no fue válido, por favor intente de nuevo.");
+                    return ResponseHelper.Error<UserResponseDto>("Error al crear el usuario", 500);
                 }
-                if (createdUser == null)
+
+                if (!userCreated)
                 {
-                    return ResponseHelper.Error<UserResponseDto>("Error al crear el usuario");
+                    return ResponseHelper.Error<UserResponseDto>("reCAPTCHA inválido. Por favor, intente nuevamente.", 400);
                 }
+
+                // Retornar éxito si todo es correcto
                 return ResponseHelper.Success<UserResponseDto>(null, "Usuario creado exitosamente", 201);
             }
             catch (Exception ex)
             {
-                return ResponseHelper.Error<UserResponseDto>($"Ocurrió un error: {ex.Message}");
+                Console.WriteLine($"Exception: {ex.Message}"); // Log de la excepción
+                return ResponseHelper.Error<UserResponseDto>($"Ocurrió un error inesperado: {ex.Message}", 500);
             }
         }
+
+        /// <summary>
+        /// Crea un nuevo usuario como trabajador.
+        /// </summary>
+        /// <param name="userDto">El UserRequestDto que contiene los detalles del nuevo usuario.</param>
+        /// <returns>Un ApiResponse que contiene el UserResponseDto del usuario creado.</returns>
+        [HttpPost("CreateUserAsWorker")]
+        public async Task<ActionResult<ApiResponse<UserResponseDto>>> CreateUserAsStaff([FromBody] UserRequestDto userDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                return ResponseHelper.BadRequest<UserResponseDto>("Datos de usuario inválidos");
+            }
+
+            try
+            {
+                // Lógica para crear usuario sin necesidad de reCAPTCHA
+                var createdUser = await _userAppService.CreateUserReceptionistAsync(new CreateUserCommand(userDto));
+
+                if (createdUser == null)
+                {
+                    return ResponseHelper.Error<UserResponseDto>("Error al crear el usuario", 500);
+                }
+
+                return ResponseHelper.Success<UserResponseDto>(null, "Usuario creado exitosamente", 201);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception: {ex.Message}");
+                return ResponseHelper.Error<UserResponseDto>($"Ocurrió un error inesperado: {ex.Message}", 500);
+            }
+        }
+
 
         /// <summary>
         /// Actualiza un usuario existente.

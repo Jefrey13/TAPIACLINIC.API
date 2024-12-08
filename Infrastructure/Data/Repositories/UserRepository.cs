@@ -121,6 +121,8 @@ namespace Infrastructure.Data.Repositories
                     user.PatientCode = await GeneratePatientCodeAsync(user.FirstName, user.LastName);
                 }
 
+                user.StateId = 1;
+
                 //await ValidateUniqueFieldsAsync(user);
                 await base.AddAsync(user);
             }
@@ -175,10 +177,10 @@ namespace Infrastructure.Data.Repositories
                 existingUser.Gender = user.Gender;
                 existingUser.BirthDate = user.BirthDate;
                 existingUser.StateId = user.StateId;
-                existingUser.HasAcceptedTermsAndConditions = true;
                 existingUser.UpdatedAt = DateTime.Now;
 
                 // Guardar los cambios en la base de datos
+                await _context.SaveChangesAsync();
             }
             catch (DbUpdateException ex)
             {

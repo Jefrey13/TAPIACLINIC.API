@@ -34,7 +34,8 @@ namespace Application.Mappings
                 .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.State.Id))  // Mapear ID del estado
                 .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State.Name))  // Mapear nombre del estado
                 .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.Role != null ? src.Role.Id : (int?)null))  // Manejar posibles valores nulos de Role
-                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : null));  // Manejar posibles valores nulos de Role
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : null))  // Manejar posibles valores nulos de Role
+                .ForMember(dest => dest.LastActivity, opt => opt.MapFrom(src => src.LastActivity));
 
             // Mapeo de UserRequestDto a User
             CreateMap<UserRequestDto, User>()
@@ -46,7 +47,7 @@ namespace Application.Mappings
                 .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => Enum.Parse<Gender>(src.Gender)))  // Convertir string a enum Gender
                 .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate))
                 .ForMember(dest => dest.IdCard, opt => opt.MapFrom(src => src.IdCard))
-                .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.StateId))  // Mapear ID del estado
+                //.ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.StateId))  // Mapear ID del estado
                 .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.RoleId))  // Mapear ID del rol
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));  // Actualizar el campo UpdatedAt automáticamente
 

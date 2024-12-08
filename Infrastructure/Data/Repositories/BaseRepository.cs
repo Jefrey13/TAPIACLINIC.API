@@ -39,11 +39,11 @@ public class BaseRepository<T> where T : class
 
         // Obtén los estados "Activo" y "No Activo" de la tabla States
         var activeState = await _context.States.FirstOrDefaultAsync(s => s.Name == "Activo");
-        var inactiveState = await _context.States.FirstOrDefaultAsync(s => s.Name == "No Activo");
+        var inactiveState = await _context.States.FirstOrDefaultAsync(s => s.Name == "Inactivo");
 
         if (activeState == null || inactiveState == null)
         {
-            throw new InvalidOperationException("The 'Activo' or 'No Activo' states do not exist in the States table.");
+            throw new InvalidOperationException("The 'Activo' or 'Inactivo' states do not exist in the States table.");
         }
 
         // Verifica si la entidad tiene una propiedad "StateId" para actualizar el estado

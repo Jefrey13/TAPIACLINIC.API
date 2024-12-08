@@ -99,5 +99,10 @@ namespace Application.Services.Impl
         {
             return await _mediator.Send(command);
         }
+
+        public async Task<bool> CreateUserReceptionistAsync(CreateUserCommand command)
+        {
+            return await _mediator.Send(command); // Correcto, retorna un valor booleano indicando éxito o fallo
+        }
     }
 }

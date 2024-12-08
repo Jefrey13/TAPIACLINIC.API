@@ -18,6 +18,7 @@ namespace Application.Services
         /// <returns>Returns true if the user was created successfully.</returns>
         Task<bool> CreateUserAsync(CreateUserCommand command, string recaptchaToken);
 
+        Task<bool> CreateUserReceptionistAsync(CreateUserCommand command);
         /// <summary>
         /// Updates an existing user in the system.
         /// </summary>

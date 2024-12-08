@@ -48,11 +48,17 @@ public class User
     [MaxLength(20)]
     public string IdCard { get; set; }
 
+    public DateTime? LastActivity { get; set; }
+
+    //This property is not necessary because the application already have uses the State table, to manage active and inactive statuses.
+    //public bool IsUsernameAvailable { get; set; } = true;
+
+
     //Opcion para validar si la cuenta esta activa o si no lo esta aun.
 
 
     // Indicates whether the user's account is activated.
-   public bool? IsAccountActivated { get; set; }
+    public bool? IsAccountActivated { get; set; }
 
 
     // Indicates whether the user has accepted the terms and conditions during login.

@@ -32,5 +32,7 @@ namespace Application.Models.ReponseDtos
         public string Role { get; set; }   // Nombre del rol
 
         public bool IsActive { get; set; }
+
+        public DateTime? LastActivity { get; set; }
     }
 }

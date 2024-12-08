@@ -5,6 +5,7 @@ using Domain.Entities;
 using Domain.Repositories;
 using MediatR;
 using BCrypt.Net;
+using Application.Services;
 
 namespace Application.Handlers.Users
 {
@@ -15,12 +16,14 @@ namespace Application.Handlers.Users
     public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, bool>
     {
         private readonly IUserRepository _userRepository;
+        private readonly IAuthService _authService;
         private readonly IMapper _mapper;
 
-        public CreateUserCommandHandler(IUserRepository userRepository, IMapper mapper)
+        public CreateUserCommandHandler(IUserRepository userRepository, IMapper mapper, IAuthService authService)
         {
             _userRepository = userRepository;
             _mapper = mapper;
+            _authService = authService;
         }
 
         public async Task<bool> Handle(CreateUserCommand request, CancellationToken cancellationToken)
@@ -71,7 +74,7 @@ namespace Application.Handlers.Users
                 {
                     throw new Exception("Failed to create the user.");
                 }
-
+                await _authService.SendMessageAsync(request.UserDto.Email);
                 return true;
             }
             catch (ValidationException ex)
