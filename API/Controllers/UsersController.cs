@@ -124,7 +124,7 @@ namespace API.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception: {ex.Message}"); // Log de la excepción
-                return ResponseHelper.Error<UserResponseDto>($"Ocurrió un error inesperado: {ex.Message}", 500);
+                return ResponseHelper.Error<UserResponseDto>($"Error: {ex.Message}", 500);
             }
         }
 

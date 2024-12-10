@@ -51,8 +51,6 @@ namespace Application.Models.RequestDtos
         [RegularExpression(@"^\d{3}-\d{6}-\d{4}[A-Z]$",
             ErrorMessage = "El formato de la cédula debe ser 000-000000-0000X.")]
         public string IdCard { get; set; }
-
-        public bool? IsAccountActivated { get; set; }
         public int? RoleId { get; set; }
     }
 }

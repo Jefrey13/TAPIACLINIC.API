@@ -20,7 +20,9 @@ public class Staff
     [MaxLength(50)]
     public string? MinsaCode { get; set; }
 
-    public int? YearsExperience { get; set; }
+    public int YearsExperience { get; set; }
+
+    public DateTime HiringDate { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 

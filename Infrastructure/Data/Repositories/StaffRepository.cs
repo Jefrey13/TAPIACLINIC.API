@@ -1,6 +1,7 @@
 ﻿using Domain.Entities;
 using Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Sprache;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -45,18 +46,48 @@ namespace Infrastructure.Data.Repositories
             }
         }
 
-        /// <summary>
-        /// Adds a new staff member to the database after validating associated User fields.
-        /// </summary>
-        /// <param name="staff">The staff entity to add.</param>
         public override async Task AddAsync(Staff staff)
         {
-            if (staff.User == null)
-                throw new InvalidOperationException("The Staff entity must have an associated User entity.");
+            try
+            {
+                // Verificar si el objeto Staff tiene un usuario asociado
+                if (staff.User == null)
+                {
+                    throw new InvalidOperationException("La entidad de Personal debe tener una entidad de Usuario asociada.");
+                }
 
-            await ValidateUniqueUserFieldsAsync(staff.User);
-            await base.AddAsync(staff);
+                staff.User.StateId = 1;
+                staff.User.IsAccountActivated = true;
+
+                // Validar que los campos del usuario sean únicos (en caso de que exista validación de unicidad, como nombre de usuario o correo)
+                await ValidateUniqueUserFieldsAsync(staff.User);
+
+                // Logueamos la información antes de agregar el personal para depuración
+                Console.WriteLine($"Agregando personal: {staff.User.UserName}, {staff.User.Email}");
+
+                // Intentamos agregar la entidad Staff a la base de datos
+                await base.AddAsync(staff);
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Capturamos y manejamos excepciones específicas como InvalidOperationException
+                Console.WriteLine($"Error de operación: {ex.Message}");
+                throw new InvalidOperationException("Hubo un error en la operación. Verifique que todos los datos estén correctamente proporcionados.", ex);
+            }
+            catch (DbUpdateException dbEx)
+            {
+                // Capturamos excepciones relacionadas con la base de datos, como errores al guardar los cambios
+                Console.WriteLine($"Error de base de datos: {dbEx.Message}");
+                throw new DbUpdateException("Ocurrió un error al intentar guardar los cambios en la base de datos. Por favor, intente de nuevo.", dbEx);
+            }
+            catch (Exception ex)
+            {
+                // Capturamos cualquier otra excepción general
+                Console.WriteLine($"Ocurrió un error inesperado: {ex.Message}");
+                throw new Exception("Ha ocurrido un error inesperado. Por favor, contacte con el soporte técnico.", ex);
+            }
         }
+
 
         /// <summary>
         /// Updates an existing staff member in the database after validating associated User fields.
@@ -64,11 +95,28 @@ namespace Infrastructure.Data.Repositories
         /// <param name="staff">The staff entity to update.</param>
         public override async Task UpdateAsync(Staff staff)
         {
-            if (staff.User == null)
-                throw new InvalidOperationException("The Staff entity must have an associated User entity.");
+            try
+            {
+                // Verificar si el staff tiene un usuario asociado
+                if (staff.User == null)
+                    throw new InvalidOperationException("La entidad de Staff debe tener una entidad de Usuario asociada.");
 
-            await ValidateUniqueUserFieldsAsync(staff.User);
-            await base.UpdateAsync(staff);
+                // Validar los campos únicos del usuario
+                await ValidateUniqueUserFieldsAsync(staff.User);
+
+                // Actualizar el staff en la base de datos
+                await base.UpdateAsync(staff);
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Manejo de excepciones con un mensaje claro en español
+                throw new InvalidOperationException($"Error al intentar actualizar el personal: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                // Manejo de otras excepciones generales con un mensaje en español
+                throw new Exception($"Error al actualizar el personal: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -104,11 +152,25 @@ namespace Infrastructure.Data.Repositories
         /// <returns>A list of all staff members with their associated User and Specialty information.</returns>
         public override async Task<IEnumerable<Staff>> GetAllAsync()
         {
-            return await _context.Staffs
-                .Include(s => s.User)  // Incluir la relación con el User
-                .Include(s => s.Specialty)  // Incluir la relación con la Specialty
-                .ToListAsync();
+            try
+            {
+                // Retrieve all staff members, including the related User and Specialty information
+                var result = await _context.Staffs
+                    .Include(s => s.User)  // Include the relation with the User
+                    .Include(s => s.Specialty)  // Include the relation with the Specialty
+                    .Include(s => s.User.Role)
+                .Include(s => s.User.State)
+                    .ToListAsync();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                // Friendly error message for the user in case of failure
+                throw new Exception("Hubo un problema al intentar recuperar la lista de personal. Por favor, intente nuevamente más tarde.");
+            }
         }
+
 
         /// <summary>
         /// Retrieves a staff member by their ID, including related User and Specialty information.
@@ -144,7 +206,7 @@ namespace Infrastructure.Data.Repositories
         /// <returns>A list of staff members with users in the specified role.</returns>
         public async Task<IEnumerable<Staff>> GetByRoleAsync(string roleName)
         {
-            return await _context.Staffs
+            var result = await _context.Staffs
                 .Include(s => s.User)
                 .Include(s => s.User.Role)
                 .Include(s => s.User.State)
@@ -152,6 +214,8 @@ namespace Infrastructure.Data.Repositories
                 .Where(s => s.User.Role.Name == roleName)
                 .AsNoTracking()  // Disable tracking for read-only data to improve performance
                 .ToListAsync();
+
+            return result;
         }
 
         /// <summary>
@@ -171,11 +235,11 @@ namespace Infrastructure.Data.Repositories
 
             // Retrieve the "Activo" and "No Activo" states from the States table
             var activeState = await _context.States.FirstOrDefaultAsync(s => s.Name == "Activo");
-            var inactiveState = await _context.States.FirstOrDefaultAsync(s => s.Name == "No Activo");
+            var inactiveState = await _context.States.FirstOrDefaultAsync(s => s.Name == "Inactivo");
 
             if (activeState == null || inactiveState == null)
             {
-                throw new InvalidOperationException("The 'Activo' or 'No Activo' states do not exist in the States table.");
+                throw new InvalidOperationException("The 'Activo' or 'Inactivo' states do not exist in the States table.");
             }
 
             // Toggle the StateId of the associated user

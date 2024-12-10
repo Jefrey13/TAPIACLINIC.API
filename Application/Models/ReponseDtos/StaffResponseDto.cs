@@ -10,8 +10,7 @@ namespace Application.Models.ReponseDtos
     {
         public int Id { get; set; }
         public string MinsaCode { get; set; }
-        public int? YearsExperience { get; set; }
-        public bool Active { get; set; }
+        public int YearsExperience { get; set; }
 
         // Relación con el Usuario
         public UserResponseDto User { get; set; }  // Información completa del usuario
@@ -19,6 +18,8 @@ namespace Application.Models.ReponseDtos
         // Relación con la Especialidad
         public int? SpecialtyId { get; set; }
         public string SpecialtyName { get; set; }
+
+        public DateTime HiringDate { get; set; }
 
         // Fechas
         public DateTime CreatedAt { get; set; }

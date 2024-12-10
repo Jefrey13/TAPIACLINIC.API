@@ -12,6 +12,6 @@ namespace Application.Models.RequestDtos
         public int? SpecialtyId { get; set; }
         public string? MinsaCode { get; set; }
         public int? YearsExperience { get; set; }
-        public bool Active { get; set; }
+        public DateTime HiringDate { get; set; }
     }
 }
