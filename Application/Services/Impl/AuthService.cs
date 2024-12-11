@@ -11,6 +11,7 @@ using Domain.Entities;
 using Application.Models.ResponseDtos;
 using Microsoft.IdentityModel.Tokens;
 using Application.Commands.Users;
+using Application.Queries.Users;
 
 namespace Application.Services.Impl
 {
@@ -232,5 +233,11 @@ namespace Application.Services.Impl
             }
         }
 
+        public async Task<UserResponseDto> GetUsersByUsernameAsync(string token)
+        {
+            string username = _jwtTokenService.GetUsernameFromToken(token);
+
+            return await _mediator.Send(new GetUsersByUsernameQuery(username));
+        }
     }
 }

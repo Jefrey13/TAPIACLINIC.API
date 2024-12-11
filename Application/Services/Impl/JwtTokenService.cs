@@ -23,10 +23,9 @@ namespace Application.Services.Impl
             var authClaims = new List<Claim>
     {
         new Claim(ClaimTypes.Name, user.UserName),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())  // JTI (JWT ID) para evitar la reutilización del token
     };
 
-            // Agregar el único rol como claim
             if (user.Role != null)
             {
                 authClaims.Add(new Claim(ClaimTypes.Role, user.Role.Name));
@@ -37,7 +36,7 @@ namespace Application.Services.Impl
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
-                expires: DateTime.Now.AddMinutes(30),  // Expiración del token
+                expires: DateTime.Now.AddMinutes(30),  // Asegúrate de que este valor es adecuado
                 claims: authClaims,
                 signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
             );
@@ -45,8 +44,9 @@ namespace Application.Services.Impl
             string jwt = new JwtSecurityTokenHandler().WriteToken(token);
             Console.WriteLine("Generated Token: " + jwt);
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return jwt;  // Devuelve el JWT generado
         }
+
 
         public string GenerateRefreshToken()
         {
@@ -86,9 +86,22 @@ namespace Application.Services.Impl
 
         public string GetUsernameFromToken(string token)
         {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new ArgumentException("El token no puede ser nulo o vacío.");
+            }
+
             var tokenHandler = new JwtSecurityTokenHandler();
-            var jwtToken = tokenHandler.ReadJwtToken(token);
-            return jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
+
+            try
+            {
+                var jwtToken = tokenHandler.ReadJwtToken(token);  // Deserializa el JWT
+                return jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("El token no es válido.", ex);
+            }
         }
 
         /// <summary>

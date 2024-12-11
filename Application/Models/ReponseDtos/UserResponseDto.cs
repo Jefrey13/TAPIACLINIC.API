@@ -34,5 +34,7 @@ namespace Application.Models.ReponseDtos
         public bool IsActive { get; set; }
 
         public DateTime? LastActivity { get; set; }
+
+        public byte[]? ProfileImage { get; set; }
     }
 }

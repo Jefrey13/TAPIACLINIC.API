@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using API.Utils;
 using Newtonsoft.Json;
+using Domain.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -131,6 +132,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+
 // Configuración para redirección HTTPS
 builder.Services.AddHttpsRedirection(options =>
 {
@@ -148,6 +150,14 @@ builder.Services.AddControllers(options =>
 builder.Services.AddResponseCompression();
 
 var app = builder.Build();
+
+// Crear el usuario administrador al iniciar la aplicación
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var userRepository = services.GetRequiredService<IUserRepository>(); // Repositorio de usuario
+    await userRepository.CreateAdminUserAsync();  // Crear usuario administrador
+}
 
 // Usa el middleware de manejo global de excepciones
 app.UseMiddleware<ExceptionHandlingMiddleware>();

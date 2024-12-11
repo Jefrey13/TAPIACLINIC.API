@@ -4,16 +4,19 @@ using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Infrastructure.Data.Migrations
+namespace Infrastructure.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241210053236_RemoveForeignKeyAndModifyMenus")]
+    partial class RemoveForeignKeyAndModifyMenus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -425,6 +428,9 @@ namespace Infrastructure.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<int?>("MenuId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -434,6 +440,8 @@ namespace Infrastructure.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("MenuId");
 
                     b.ToTable("Roles");
                 });
@@ -798,9 +806,6 @@ namespace Infrastructure.Data.Migrations
                     b.Property<string>("PatientCode")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<byte[]>("ProfileImage")
-                        .HasColumnType("varbinary(max)");
-
                     b.Property<int?>("RoleId")
                         .HasColumnType("int");
 
@@ -1004,6 +1009,13 @@ namespace Infrastructure.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Domain.Entities.Role", b =>
+                {
+                    b.HasOne("Domain.Entities.Menu", null)
+                        .WithMany("Roles")
+                        .HasForeignKey("MenuId");
+                });
+
             modelBuilder.Entity("Domain.Entities.RoleMenu", b =>
                 {
                     b.HasOne("Domain.Entities.Menu", "Menu")
@@ -1190,6 +1202,8 @@ namespace Infrastructure.Data.Migrations
                     b.Navigation("Children");
 
                     b.Navigation("RoleMenus");
+
+                    b.Navigation("Roles");
                 });
 
             modelBuilder.Entity("Domain.Entities.Permission", b =>

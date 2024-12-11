@@ -34,5 +34,7 @@ namespace Application.Models.RequestDtos.UpdateRequestDto
         [Required(ErrorMessage = "El ID del estado es requerido.")]
         [Range(1, 2, ErrorMessage = "El estado debe ser 1 (Activo) o 2 (Inactivo).")]
         public int StateId { get; set; }
+
+        public byte[]? ProfileImage { get; set; }
     }
 }

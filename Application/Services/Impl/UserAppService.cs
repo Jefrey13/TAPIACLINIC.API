@@ -17,16 +17,18 @@ namespace Application.Services.Impl
     {
         private readonly IMediator _mediator;
         private readonly IMapper _mapper;
+        private readonly IJwtTokenService _jwtTokenService;
 
         /// <summary>
         /// Constructor to initialize dependencies for MediatR and AutoMapper.
         /// </summary>
         /// <param name="mediator">MediatR instance to dispatch commands and queries.</param>
         /// <param name="mapper">AutoMapper instance to map between entities and DTOs.</param>
-        public UserAppService(IMediator mediator, IMapper mapper)
+        public UserAppService(IMediator mediator, IMapper mapper, IJwtTokenService jwtTokenService)
         {
             _mediator = mediator;
             _mapper = mapper;
+            _jwtTokenService = jwtTokenService;
         }
 
         /// <summary>
@@ -103,6 +105,12 @@ namespace Application.Services.Impl
         public async Task<bool> CreateUserReceptionistAsync(CreateUserCommand command)
         {
             return await _mediator.Send(command);
+        }
+
+        public async Task<UserResponseDto> GetUsersByUsernameAsync(string jwtToken)
+        {
+            var username = _jwtTokenService.GetUsernameFromToken(jwtToken);
+            return await _mediator.Send(new GetUsersByUsernameQuery(username));
         }
     }
 }

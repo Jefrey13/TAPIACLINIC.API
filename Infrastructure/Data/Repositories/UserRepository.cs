@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Application.Exceptions;
+using Domain.Entities;
 using Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -177,6 +178,7 @@ namespace Infrastructure.Data.Repositories
                 existingUser.Gender = user.Gender;
                 existingUser.BirthDate = user.BirthDate;
                 existingUser.StateId = user.StateId;
+                existingUser.ProfileImage = user.ProfileImage;
                 existingUser.UpdatedAt = DateTime.Now;
 
                 // Guardar los cambios en la base de datos
@@ -201,28 +203,70 @@ namespace Infrastructure.Data.Repositories
         /// <summary>
         /// Retrieves a user by their email address.
         /// </summary>
-        /// <param name="email">The email address of the user.</param>
-        /// <returns>The user with the specified email, or null if not found.</returns>
+        /// <param name="email">The email address of the user to retrieve.</param>
+        /// <returns>The user with the specified email, or throws an exception if not found or invalid.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided email is null or empty.</exception>
+        /// <exception cref="NotFoundException">Thrown when no user with the specified email is found.</exception>
+        /// <exception cref="Exception">Thrown for any other errors during the retrieval process.</exception>
         public async Task<User> GetUserByEmailAsync(string email)
         {
-            return await _context.Users
-                .Include(u => u.State)  // Incluir relación con el Estado
-                .Include(u => u.Role)   // Incluir relación con el Rol
-                .FirstOrDefaultAsync(u => u.Email.Value == email);
+                // Validate that the email is not null or empty
+                if (string.IsNullOrWhiteSpace(email))
+                {
+                    throw new ArgumentNullException(nameof(email), "El correo electrónico no puede estar vacío o nulo.");
+                }
+
+                // Retrieve the user from the database by email
+                var user = await _context.Users
+                    .Include(u => u.State)  // Include the related State for reference
+                    .Include(u => u.Role)   // Include the related Role for reference
+                    .FirstOrDefaultAsync(u => u.Email.Value == email);
+
+                return user;
         }
+
         /// <summary>
         /// Retrieves an active user by their username.
         /// </summary>
         /// <param name="userName">The username of the user to retrieve.</param>
         /// <returns>The active user with the specified username, or null if not found or inactive.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the provided username is null or empty.</exception>
+        /// <exception cref="Exception">Thrown when there is an issue retrieving the user from the database.</exception>
         public async Task<User> GetUserByUserNameAsync(string userName)
         {
-            // Retrieve the user only if they are in the "Activo" state
-            return await _context.Users
-                .Include(u => u.State) // Include the related State
-                .Include(u => u.Role)  // Include the related Role
-                .FirstOrDefaultAsync(u => u.UserName == userName && u.StateId == 1);
+            try
+            {
+                // Validate that the username is not null or empty
+                if (string.IsNullOrWhiteSpace(userName))
+                {
+                    throw new ArgumentNullException(nameof(userName), "El nombre de usuario no puede estar vacío o nulo.");
+                }
+
+                // Retrieve the user from the database if the state is 'Activo' (active)
+                var user = await _context.Users
+                    .Include(u => u.State) // Include the related State for reference
+                    .Include(u => u.Role)  // Include the related Role for reference
+                    .FirstOrDefaultAsync(u => u.UserName == userName && u.StateId == 1);
+
+                return user;
+            }
+            catch (ArgumentNullException ex)
+            {
+                // Handle the case where the username is invalid (empty or null)
+                throw new ArgumentException("El nombre de usuario proporcionado es inválido. Por favor, ingresa un nombre de usuario válido.");
+            }
+            catch (NotFoundException ex)
+            {
+                // Handle the case where no active user is found for the given username
+                throw new Exception($"Lo sentimos, no encontramos al usuario con el nombre de usuario '{userName}'. {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                // General error handling, providing a user-friendly message in Spanish
+                throw new Exception("Ocurrió un problema al intentar obtener los datos del usuario. Por favor, inténtelo de nuevo más tarde.");
+            }
         }
+
 
 
         /// <summary>
@@ -292,6 +336,58 @@ namespace Infrastructure.Data.Repositories
             }
 
             return false;
+        }
+
+        public async Task CreateAdminUserAsync()
+        {
+            // Verificar si ya existe un usuario administrador
+            var existingAdmin = await _context.Users
+                .FirstOrDefaultAsync(u => u.RoleId == 1);  // Admin roleId = 1
+
+            if (existingAdmin != null)
+            {
+                return; // Ya existe un usuario administrador, no lo creamos de nuevo.
+            }
+
+            // Datos predeterminados del nuevo administrador
+            string firstName = "Carlos";
+            string lastName = "Gutiellez";
+            string email = "carlos.torrente@example.com";
+            string password = "Pa33Wor!";
+            string phone = "+5058903971";
+            string address = "Costado Sur Casa Las Mercedez";
+            DateTime birthDate = new DateTime(2000, 1, 1);
+            string idCard = "099-128998-9910W";
+            string userName = "carlosadmin";
+            int roleId = 1; // Asumiendo que el ID de administrador es 1
+
+            // Encriptar la contraseña antes de insertarla
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
+
+            // Crear un nuevo usuario (User)
+            var user = new User
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Email = new Domain.ValueObjects.Email(email),  // Usando el Value Object Email
+                Password = hashedPassword,
+                Phone = new Domain.ValueObjects.PhoneNumber(phone),  // Usando el Value Object PhoneNumber
+                Address = address,
+                Gender = Domain.Enums.Gender.Male,  // Asumiendo género masculino
+                BirthDate = birthDate,
+                IdCard = idCard,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
+                StateId = 1,  // Estado activo
+                RoleId = roleId,  // Admin role
+                UserName = userName,
+                HasAcceptedTermsAndConditions = true,
+                IsAccountActivated = true,
+                LastActivity = DateTime.Now
+            };
+
+            // Insertar el usuario en la base de datos
+            await _context.Users.AddAsync(user);
         }
     }
 }

@@ -55,7 +55,6 @@ namespace Application.Services
 
         Task<IEnumerable<UserResponseDto>> GetUsersByStateAsync(int stateId);
 
-
-
+        Task<UserResponseDto> GetUsersByUsernameAsync(string jwtToken);
     }
 }

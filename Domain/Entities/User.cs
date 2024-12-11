@@ -65,7 +65,7 @@ public class User
 
     public bool? HasAcceptedTermsAndConditions { get; set; } = true;
 
-
+    public byte[]? ProfileImage { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public DateTime UpdatedAt { get; set; } = DateTime.Now;

@@ -35,6 +35,8 @@ namespace Application.Handlers.Staffs
                 // Map StaffRequestDto to Staff entity
                 var staff = _mapper.Map<Staff>(request.StaffDto);
 
+                BCrypt.Net.BCrypt.HashPassword(staff.User.Password);
+
                 // Save to repository
                 await _staffRepository.AddAsync(staff);
 
@@ -56,7 +58,7 @@ namespace Application.Handlers.Staffs
             }
             catch (Exception ex)
             {
-                throw new Exception($"An unexpected error occurred while creating the staff member: {ex.Message}", ex);
+                throw new Exception($"An unexpected error occurred while creating the staff member: {ex.InnerException}");
             }
         }
     }

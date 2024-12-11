@@ -52,5 +52,7 @@ namespace Application.Models.RequestDtos
             ErrorMessage = "El formato de la cédula debe ser 000-000000-0000X.")]
         public string IdCard { get; set; }
         public int? RoleId { get; set; }
+
+        public byte[]? ProfileImage { get; set; }
     }
 }

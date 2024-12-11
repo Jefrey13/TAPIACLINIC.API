@@ -215,5 +215,42 @@ namespace API.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves a user by their username based on the provided JWT.
+        /// </summary>
+        /// <returns>A user details response or an error if the user is not found or the token is invalid.</returns>
+        [HttpGet("by-username")]
+        public async Task<ActionResult<ApiResponse<UserResponseDto>>> GetUserByUsername()
+        {
+            try
+            {
+                // Get the JWT from the Authorization header (Bearer token)
+                var jwtToken = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+                // Check if the JWT is missing or invalid
+                if (string.IsNullOrEmpty(jwtToken))
+                {
+                    return ResponseHelper.Unauthorized<UserResponseDto>("Token de autorización no proporcionado o inválido");
+                }
+
+                // Call the service method and pass the JWT token to retrieve the user by username
+                var user = await _authService.GetUsersByUsernameAsync(jwtToken);
+
+                // If no user is found, return a not found response
+                if (user == null)
+                {
+                    return ResponseHelper.NotFound<UserResponseDto>("No se encontró un usuario con el nombre de usuario proporcionado");
+                }
+
+                // Return a success response with the user
+                return ResponseHelper.Success(user, "Usuario recuperado exitosamente");
+            }
+            catch (Exception ex)
+            {
+                // Handle unexpected errors and return an error response
+                return ResponseHelper.Error<UserResponseDto>($"Ocurrió un error al recuperar el usuario: {ex.Message}");
+            }
+        }
+
     }
 }

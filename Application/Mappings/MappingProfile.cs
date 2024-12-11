@@ -32,6 +32,8 @@ namespace Application.Mappings
                 .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender.ToString()))  // Convertir enum Gender a string
                 .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate))
                 .ForMember(dest => dest.IdCard, opt => opt.MapFrom(src => src.IdCard))
+                .ForMember(dest => dest.ProfileImage, opt => opt.Condition(src => src.ProfileImage != null))
+                 .ForMember(dest => dest.ProfileImage, opt => opt.MapFrom(src => src.ProfileImage))
                 .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.State.Id))  // Mapear ID del estado
                 .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State.Name))  // Mapear nombre del estado
                 .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.Role != null ? src.Role.Id : (int?)null))  // Manejar posibles valores nulos de Role
@@ -198,6 +200,7 @@ namespace Application.Mappings
                 .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => Enum.Parse<Gender>(src.Gender)))  // Convertir string a enum Gender
                 .ForMember(dest => dest.BirthDate, opt => opt.MapFrom(src => src.BirthDate))
                 .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.PhoneAddress))
+                 .ForMember(dest => dest.ProfileImage, opt => opt.Condition(src => src.ProfileImage != null))
                 .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.StateId))  // Mapear ID del estado
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));  // Actualizar el campo UpdatedAt automáticamente
 

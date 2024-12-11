@@ -125,26 +125,41 @@ namespace API.Controllers
         /// <summary>
         /// Retrieves menus based on the role associated with the user.
         /// </summary>
-        /// <returns>A list of menus accessible to the role of the user.</returns>
+        /// <returns>
+        /// An ApiResponse containing a list of MenuResponseDto objects, representing the menus accessible to the user's role.
+        /// </returns>
         [HttpGet("by-role")]
         public async Task<ActionResult<ApiResponse<IEnumerable<MenuResponseDto>>>> GetMenusByRole()
         {
             // Get JWT from the Authorization header
             var jwtToken = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
 
+            // Check if the token is provided
             if (string.IsNullOrEmpty(jwtToken))
             {
-                return Unauthorized(new ApiResponse<IEnumerable<MenuResponseDto>>(false, "Authorization token is missing", null, 401));
+                return ResponseHelper.Unauthorized<IEnumerable<MenuResponseDto>>("Authorization token is missing");
             }
 
-            var menus = await _menuAppService.GetMenusByRoleAsync(jwtToken);
-            if (menus == null || !menus.Any())
+            try
             {
-                return NotFound(new ApiResponse<IEnumerable<MenuResponseDto>>(false, "No menus found for this role", null, 404));
-            }
+                // Call the service to get menus based on the user's role
+                var menus = await _menuAppService.GetMenusByRoleAsync(jwtToken);
 
-            var response = new ApiResponse<IEnumerable<MenuResponseDto>>(true, "Menus retrieved based on role successfully", menus, 200);
-            return Ok(response);
+                // Check if menus are found
+                if (menus == null || !menus.Any())
+                {
+                    return ResponseHelper.NotFound<IEnumerable<MenuResponseDto>>("No menus found for this role");
+                }
+
+                // Return a success response with the menus
+                return ResponseHelper.Success(menus, "Menus retrieved based on role successfully");
+            }
+            catch (Exception ex)
+            {
+                // Log the exception and return an error response
+                Console.WriteLine($"Exception: {ex.Message}");
+                return ResponseHelper.Error<IEnumerable<MenuResponseDto>>($"Error: {ex.Message}");
+            }
         }
     }
 }

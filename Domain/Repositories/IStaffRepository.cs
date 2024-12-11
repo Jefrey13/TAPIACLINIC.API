@@ -9,4 +9,5 @@ public interface IStaffRepository : IRepository<Staff>
     Task<IEnumerable<Staff>> GetByStateAsync(int stateId);
 
     Task<IEnumerable<Staff>> GetByRoleAsync(string roleName);
+
 }

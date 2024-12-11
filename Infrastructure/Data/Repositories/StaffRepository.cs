@@ -262,5 +262,6 @@ namespace Infrastructure.Data.Repositories
             _context.Entry(staffEntity.User).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
+
     }
 }

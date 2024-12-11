@@ -30,10 +30,7 @@ public class Menu
 
     public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
-    // Relación many-to-many con Roles
-    public ICollection<Role> Roles { get; set; }
-
-    public ICollection<RoleMenu> RoleMenus { get; set; }
+    public ICollection<RoleMenu> RoleMenus { get; set; } = new List<RoleMenu>();
 
     // Nueva propiedad para los submenús
     public ICollection<Menu> Children { get; set; } = new List<Menu>();

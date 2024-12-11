@@ -58,5 +58,8 @@ namespace Application.Services
         /// <returns></returns>
         Task<ServiceResult> ActivateAccount(string token);
 
+
+        Task<UserResponseDto> GetUsersByUsernameAsync(string jwt);
+
     }
 }
