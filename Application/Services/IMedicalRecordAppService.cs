@@ -16,7 +16,7 @@ namespace Application.Services
         /// </summary>
         /// <param name="command">The command containing the medical record data to be created.</param>
         /// <returns>The ID of the newly created medical record.</returns>
-        Task<int> CreateMedicalRecordAsync(CreateMedicalRecordCommand command);
+        Task<int> CreateMedicalRecordAsync(CreateMedicalRecordCommand command, string jwtToken);
 
         /// <summary>
         /// Updates an existing medical record in the system.

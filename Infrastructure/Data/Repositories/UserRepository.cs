@@ -288,11 +288,21 @@ namespace Infrastructure.Data.Repositories
         /// <returns>A list of users with their State and Role included.</returns>
         public override async Task<IEnumerable<User>> GetAllAsync()
         {
-            return await _context.Users
-                .Include(u => u.State)
-                .Include(u => u.Role)
-                .ToListAsync();
+            try
+            {
+                return await _context.Users
+                    .Include(u => u.State)
+                    .Include(u => u.Role)
+                    .Where(u => u.RoleId == 4)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log error
+                throw new Exception("Error retrieving users.");
+            }
         }
+
 
         public async Task UpdatePasswordAsync(User user)
         {

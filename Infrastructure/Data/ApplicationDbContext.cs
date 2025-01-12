@@ -31,6 +31,8 @@ namespace Infrastructure.Data
         public DbSet<Token> Tokens { get; set; }
         public DbSet<User> Users { get; set; }
 
+        public DbSet<Prescription> Prescriptions { get; set; }
+
         // Intermediate tables (many-to-many relationships)
         public DbSet<RolePermission> RolePermissions { get; set; }
         public DbSet<RoleMenu> RoleMenus { get; set; }
@@ -170,6 +172,19 @@ namespace Infrastructure.Data
                 .WithMany()
                 .HasForeignKey(mr => mr.StateId)
                 .OnDelete(DeleteBehavior.Restrict);  // Prevent cascade cycle
+
+            // Configure Prescription relationships
+            modelBuilder.Entity<Prescription>()
+                .HasOne(p => p.Patient)
+                .WithMany()
+                .HasForeignKey(p => p.PatientId)
+                .OnDelete(DeleteBehavior.Restrict);  // Prevent multiple cascade paths
+
+            modelBuilder.Entity<Prescription>()
+                .HasOne(p => p.Doctor)
+                .WithMany()
+                .HasForeignKey(p => p.DoctorId)
+                .OnDelete(DeleteBehavior.Restrict);  // Prevent multiple cascade paths
 
             // Configure Appointment relationships
             modelBuilder.Entity<Appointment>()

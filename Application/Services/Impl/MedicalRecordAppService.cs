@@ -1,6 +1,8 @@
 ﻿using Application.Commands.MedicalRecords;
 using Application.Models.ReponseDtos;
 using Application.Queries.MedicalRecords;
+using Application.Queries.Staffs;
+using Application.Queries.Users;
 using AutoMapper;
 using MediatR;
 using System.Collections.Generic;
@@ -16,16 +18,18 @@ namespace Application.Services.Impl
     {
         private readonly IMediator _mediator;
         private readonly IMapper _mapper;
+        private readonly IJwtTokenService _jwtTokenService;
 
         /// <summary>
         /// Constructor to initialize dependencies for MediatR and AutoMapper.
         /// </summary>
         /// <param name="mediator">MediatR instance to dispatch commands and queries.</param>
         /// <param name="mapper">AutoMapper instance to map between entities and DTOs.</param>
-        public MedicalRecordAppService(IMediator mediator, IMapper mapper)
+        public MedicalRecordAppService(IMediator mediator, IMapper mapper, IJwtTokenService jwtTokenService)
         {
             _mediator = mediator;
             _mapper = mapper;
+            _jwtTokenService = jwtTokenService;
         }
 
         /// <summary>
@@ -34,8 +38,15 @@ namespace Application.Services.Impl
         /// </summary>
         /// <param name="command">Command with medical record creation details.</param>
         /// <returns>Returns the ID of the created medical record.</returns>
-        public async Task<int> CreateMedicalRecordAsync(CreateMedicalRecordCommand command)
+        public async Task<int> CreateMedicalRecordAsync(CreateMedicalRecordCommand command, string jwtToken)
         {
+            var username = _jwtTokenService.GetUsernameFromToken(jwtToken);
+
+            var user = await _mediator.Send(new GetUsersByUsernameQuery(username));
+
+            var result = await _mediator.Send(new GetStaffByUserIdQuery(user.Id));
+
+            command.MedicalRecordDto.StaffId = result.Id;
             return await _mediator.Send(command);
         }
 

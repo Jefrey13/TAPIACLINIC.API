@@ -56,6 +56,7 @@ namespace Infrastructure
             services.AddTransient<IScheduleRepository, ScheduleRepository>();
             services.AddTransient<ISpecialtyRepository, SpecialtyRepository>();
             services.AddTransient<IStaffRepository, StaffRepository>();
+            services.AddTransient<IPrescriptionRepository, PrescriptionRepository>();
             services.AddTransient<IStateRepository, StateRepository>();
             services.AddTransient<ISurgeryRepository, SurgeryRepository>();
             services.AddTransient<ISurgeryStaffRepository, SurgeryStaffRepository>();

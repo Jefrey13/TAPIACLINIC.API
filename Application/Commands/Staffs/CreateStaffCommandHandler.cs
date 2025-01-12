@@ -35,8 +35,8 @@ namespace Application.Handlers.Staffs
                 // Map StaffRequestDto to Staff entity
                 var staff = _mapper.Map<Staff>(request.StaffDto);
 
-                BCrypt.Net.BCrypt.HashPassword(staff.User.Password);
 
+                staff.User.Password = BCrypt.Net.BCrypt.HashPassword(staff.User.Password);
                 // Save to repository
                 await _staffRepository.AddAsync(staff);
 

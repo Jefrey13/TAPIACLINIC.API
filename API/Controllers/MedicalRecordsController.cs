@@ -4,7 +4,9 @@ using Application.Services;
 using API.Utils;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Application.Models.RequestDtos;
 
 namespace API.Controllers
 {
@@ -14,138 +16,169 @@ namespace API.Controllers
     {
         private readonly IMedicalRecordAppService _medicalRecordAppService;
 
-        /// <summary>
-        /// Initializes a new instance of the MedicalRecordsController class.
-        /// </summary>
-        /// <param name="medicalRecordAppService">The service for managing medical records.</param>
         public MedicalRecordsController(IMedicalRecordAppService medicalRecordAppService)
         {
             _medicalRecordAppService = medicalRecordAppService;
         }
 
         /// <summary>
-        /// Retrieves all medical records in the system.
+        /// Recupera todos los expedientes médicos del sistema.
         /// </summary>
-        /// <returns>A list of all medical records as MedicalRecordResponseDto.</returns>
+        /// <returns>Una lista de expedientes médicos como MedicalRecordResponseDto.</returns>
         [HttpGet]
         public async Task<ActionResult<ApiResponse<IEnumerable<MedicalRecordResponseDto>>>> GetAllMedicalRecords()
         {
-            var records = await _medicalRecordAppService.GetAllMedicalRecordsAsync();
-
-            if (records == null || !records.Any())
+            try
             {
-                return NotFound(new ApiResponse<IEnumerable<MedicalRecordResponseDto>>(false, "No medical records found", null, 404));
-            }
+                var records = await _medicalRecordAppService.GetAllMedicalRecordsAsync();
 
-            var response = new ApiResponse<IEnumerable<MedicalRecordResponseDto>>(true, "Medical records retrieved successfully", records, 200);
-            return Ok(response);
+                if (records == null || !records.Any())
+                {
+                    return ResponseHelper.NotFound<IEnumerable<MedicalRecordResponseDto>>("No se encontraron expedientes médicos");
+                }
+
+                return ResponseHelper.Success(records, "Expedientes médicos recuperados exitosamente");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<IEnumerable<MedicalRecordResponseDto>>($"Ocurrió un error: {ex.Message}");
+            }
         }
 
         /// <summary>
-        /// Retrieves a specific medical record by its ID.
+        /// Recupera un expediente médico específico por su ID.
         /// </summary>
-        /// <param name="id">The ID of the medical record to retrieve.</param>
-        /// <returns>The medical record details or a 404 if not found.</returns>
+        /// <param name="id">El ID del expediente médico a recuperar.</param>
+        /// <returns>Los detalles del expediente médico o un 404 si no se encuentra.</returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<MedicalRecordResponseDto>>> GetMedicalRecordById(int id)
         {
             if (id <= 0)
             {
-                return BadRequest(new ApiResponse<MedicalRecordResponseDto>(false, "Invalid medical record ID", null, 400));
+                return ResponseHelper.BadRequest<MedicalRecordResponseDto>("ID de expediente médico inválido");
             }
 
-            var record = await _medicalRecordAppService.GetMedicalRecordByIdAsync(id);
-            if (record == null)
+            try
             {
-                return NotFound(new ApiResponse<MedicalRecordResponseDto>(false, "Medical record not found", null, 404));
-            }
+                var record = await _medicalRecordAppService.GetMedicalRecordByIdAsync(id);
+                if (record == null)
+                {
+                    return ResponseHelper.NotFound<MedicalRecordResponseDto>("Expediente médico no encontrado");
+                }
 
-            var response = new ApiResponse<MedicalRecordResponseDto>(true, "Medical record retrieved successfully", record, 200);
-            return Ok(response);
+                return ResponseHelper.Success(record, "Expediente médico recuperado exitosamente");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<MedicalRecordResponseDto>($"Ocurrió un error: {ex.Message}");
+            }
         }
 
         /// <summary>
-        /// Retrieves a medical record by the patient's ID.
+        /// Recupera un expediente médico por el ID del paciente.
         /// </summary>
-        /// <param name="patientId">The ID of the patient whose medical record is being retrieved.</param>
-        /// <returns>The patient's medical record details or a 404 if not found.</returns>
+        /// <param name="patientId">El ID del paciente cuyo expediente médico se recuperará.</param>
+        /// <returns>Los detalles del expediente médico del paciente o un 404 si no se encuentra.</returns>
         [HttpGet("patient/{patientId}")]
         public async Task<ActionResult<ApiResponse<MedicalRecordResponseDto>>> GetMedicalRecordByPatientId(int patientId)
         {
             if (patientId <= 0)
             {
-                return BadRequest(new ApiResponse<MedicalRecordResponseDto>(false, "Invalid patient ID", null, 400));
+                return ResponseHelper.BadRequest<MedicalRecordResponseDto>("ID de paciente inválido");
             }
 
-            var record = await _medicalRecordAppService.GetMedicalRecordByPatientIdAsync(patientId);
-            if (record == null)
+            try
             {
-                return NotFound(new ApiResponse<MedicalRecordResponseDto>(false, "Medical record not found for the patient", null, 404));
-            }
+                var record = await _medicalRecordAppService.GetMedicalRecordByPatientIdAsync(patientId);
+                if (record == null)
+                {
+                    return ResponseHelper.NotFound<MedicalRecordResponseDto>("Expediente médico no encontrado para el paciente");
+                }
 
-            var response = new ApiResponse<MedicalRecordResponseDto>(true, "Medical record for patient retrieved successfully", record, 200);
-            return Ok(response);
+                return ResponseHelper.Success(record, "Expediente médico para el paciente recuperado exitosamente");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<MedicalRecordResponseDto>($"Ocurrió un error. Intente mas tarde");
+            }
         }
 
-        /// <summary>
-        /// Creates a new medical record in the system.
-        /// </summary>
-        /// <param name="command">The command containing the data for the new medical record.</param>
-        /// <returns>The ID of the newly created medical record.</returns>
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<int>>> CreateMedicalRecord([FromBody] CreateMedicalRecordCommand command)
+        public async Task<ActionResult<ApiResponse<int>>> CreateMedicalRecord([FromBody] MedicalRecordRequestDto medicalRecordRequest)
         {
-            if (command == null)
+            // Extraer el JWT del encabezado Authorization
+            var authorizationHeader = Request.Headers["Authorization"].ToString();
+            var jwtToken = authorizationHeader.StartsWith("Bearer ") ? authorizationHeader.Substring("Bearer ".Length).Trim() : string.Empty;
+            if (medicalRecordRequest == null)
             {
-                return BadRequest(new ApiResponse<int>(false, "Medical record data is required", default, 400));
+                return ResponseHelper.BadRequest<int>("Los datos del expediente médico son requeridos");
             }
 
-            var recordId = await _medicalRecordAppService.CreateMedicalRecordAsync(command);
-            var response = new ApiResponse<int>(true, "Medical record created successfully", recordId, 201);
-            return CreatedAtAction(nameof(GetMedicalRecordById), new { id = recordId }, response);
+            try
+            {
+                var recordId = await _medicalRecordAppService.CreateMedicalRecordAsync(new CreateMedicalRecordCommand(medicalRecordRequest), jwtToken);
+                return ResponseHelper.Success(recordId, "Expediente médico creado exitosamente");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<int>($"Error al crear el expediente médico: {ex.Message}");
+            }
         }
 
+
         /// <summary>
-        /// Updates an existing medical record in the system.
+        /// Actualiza un expediente médico existente en el sistema.
         /// </summary>
-        /// <param name="id">The ID of the medical record to update.</param>
-        /// <param name="command">The command containing the updated data for the medical record.</param>
-        /// <returns>No content if the update is successful, or a BadRequest if the IDs do not match.</returns>
+        /// <param name="id">El ID del expediente médico a actualizar.</param>
+        /// <param name="command">El comando que contiene los datos actualizados del expediente médico.</param>
+        /// <returns>Respuesta con estado del proceso.</returns>
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> UpdateMedicalRecord(int id, [FromBody] UpdateMedicalRecordCommand command)
         {
             if (id <= 0 || command == null)
             {
-                return BadRequest(new ApiResponse<string>(false, "Invalid medical record ID or data", null, 400));
+                return ResponseHelper.BadRequest<string>("ID de expediente médico o datos inválidos");
             }
 
-            await _medicalRecordAppService.UpdateMedicalRecordAsync(command);
-            var response = new ApiResponse<string>(true, "Medical record updated successfully", null, 200);
-            return Ok(response);
+            try
+            {
+                await _medicalRecordAppService.UpdateMedicalRecordAsync(command);
+                return ResponseHelper.Success("Expediente médico actualizado exitosamente");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<string>($"Ocurrió un error: {ex.Message}");
+            }
         }
 
         /// <summary>
-        /// Deletes a medical record from the system.
+        /// Elimina un expediente médico del sistema.
         /// </summary>
-        /// <param name="id">The ID of the medical record to delete.</param>
-        /// <returns>No content if the deletion is successful.</returns>
+        /// <param name="id">El ID del expediente médico a eliminar.</param>
+        /// <returns>Respuesta con estado del proceso.</returns>
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> DeleteMedicalRecord(int id)
         {
             if (id <= 0)
             {
-                return BadRequest(new ApiResponse<string>(false, "Invalid medical record ID", null, 400));
+                return ResponseHelper.BadRequest<string>("ID de expediente médico inválido");
             }
 
-            var record = await _medicalRecordAppService.GetMedicalRecordByIdAsync(id);
-            if (record == null)
+            try
             {
-                return NotFound(new ApiResponse<string>(false, "Medical record not found", null, 404));
-            }
+                var record = await _medicalRecordAppService.GetMedicalRecordByIdAsync(id);
+                if (record == null)
+                {
+                    return ResponseHelper.NotFound<string>("Expediente médico no encontrado");
+                }
 
-            await _medicalRecordAppService.DeleteMedicalRecordAsync(id);
-            var response = new ApiResponse<string>(true, "Medical record deleted successfully", null, 204);
-            return Ok(response);
+                await _medicalRecordAppService.DeleteMedicalRecordAsync(id);
+                return ResponseHelper.Success("Expediente médico eliminado exitosamente");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<string>($"Error al eliminar el expediente médico: {ex.Message}");
+            }
         }
     }
 }

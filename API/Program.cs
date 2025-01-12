@@ -149,6 +149,20 @@ builder.Services.AddControllers(options =>
 // Activa la compresión de respuestas
 builder.Services.AddResponseCompression();
 
+
+// Configurar CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("https://localhost:7032") // Origen del frontend
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
+
 var app = builder.Build();
 
 // Crear el usuario administrador al iniciar la aplicación

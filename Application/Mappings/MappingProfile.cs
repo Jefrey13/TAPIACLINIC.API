@@ -100,13 +100,24 @@ namespace Application.Mappings
                 .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State))  // Map to StateDto
                 .ForMember(dest => dest.Reason, opt => opt.MapFrom(src => src.Reason));
 
-            // Mapeo para la entidad MedicalRecord y su DTO
-            CreateMap<MedicalRecordRequestDto, MedicalRecord>();
+            // Mapeo para la entidad MedicalRecord y su DTO (Solicitud)
+            CreateMap<MedicalRecordRequestDto, MedicalRecord>()
+                .ForMember(dest => dest.Diagnosis, opt => opt.MapFrom(src => src.Diagnosis))
+                .ForMember(dest => dest.Fundoscopy, opt => opt.MapFrom(src => src.Fundoscopy))
+                .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => src.Notes))
+                .ForMember(dest => dest.Observations, opt => opt.MapFrom(src => src.Observations))
+                .ForMember(dest => dest.Treatment, opt => opt.MapFrom(src => src.Treatment))
+                .ForMember(dest => dest.ColorVision, opt => opt.MapFrom(src => src.ColorVision))
+                // Nuevos campos: IntraocularPressure y VisualAcuity por OD y OI
+                .ForMember(dest => dest.IntraocularPressureOD, opt => opt.MapFrom(src => src.IntraocularPressureOD))  // Presión Ocular OD
+                .ForMember(dest => dest.IntraocularPressureOI, opt => opt.MapFrom(src => src.IntraocularPressureOI))  // Presión Ocular OI
+                .ForMember(dest => dest.VisualAcuityOD, opt => opt.MapFrom(src => src.VisualAcuityOD))  // Agudeza Visual OD
+                .ForMember(dest => dest.VisualAcuityOI, opt => opt.MapFrom(src => src.VisualAcuityOI));  // Agudeza Visual OI
 
-            // Mapeo para la entidad MedicalRecord y su DTO
+            // Mapeo para la entidad MedicalRecord y su DTO (Respuesta)
             CreateMap<MedicalRecord, MedicalRecordResponseDto>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.Patient, opt => opt.MapFrom(src => src.Patient)) // Mapear UserDto
+                .ForMember(dest => dest.Patient, opt => opt.MapFrom(src => src.Patient)) // Mapear UserResponseDto
                 .ForMember(dest => dest.Staff, opt => opt.MapFrom(src => src.Staff)) // Mapear StaffResponseDto
                 .ForMember(dest => dest.OpeningDate, opt => opt.MapFrom(src => src.OpeningDate))
                 .ForMember(dest => dest.Allergies, opt => opt.MapFrom(src => src.Allergies))
@@ -114,9 +125,19 @@ namespace Application.Mappings
                 .ForMember(dest => dest.PastSurgeries, opt => opt.MapFrom(src => src.PastSurgeries))
                 .ForMember(dest => dest.FamilyHistory, opt => opt.MapFrom(src => src.FamilyHistory))
                 .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.StateId))
-                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active))
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt));
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
+                .ForMember(dest => dest.Diagnosis, opt => opt.MapFrom(src => src.Diagnosis))
+                .ForMember(dest => dest.Fundoscopy, opt => opt.MapFrom(src => src.Fundoscopy))
+                .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => src.Notes))
+                .ForMember(dest => dest.Observations, opt => opt.MapFrom(src => src.Observations))
+                .ForMember(dest => dest.Treatment, opt => opt.MapFrom(src => src.Treatment))
+                .ForMember(dest => dest.ColorVision, opt => opt.MapFrom(src => src.ColorVision))
+                .ForMember(dest => dest.IntraocularPressureOD, opt => opt.MapFrom(src => src.IntraocularPressureOD))  // Presión Ocular OD
+                .ForMember(dest => dest.IntraocularPressureOI, opt => opt.MapFrom(src => src.IntraocularPressureOI))  // Presión Ocular OI
+                .ForMember(dest => dest.VisualAcuityOD, opt => opt.MapFrom(src => src.VisualAcuityOD))  // Agudeza Visual OD
+                .ForMember(dest => dest.VisualAcuityOI, opt => opt.MapFrom(src => src.VisualAcuityOI));  // Agudeza Visual OI
+
 
 
             // Mapeo para la entidad Menu y su DTO
@@ -210,6 +231,31 @@ namespace Application.Mappings
                 .ForMember(dest => dest.SpecialtyId, opt => opt.MapFrom(src => src.SpecialtyId)) // Mapear el ID de la especialidad
                 .ForMember(dest => dest.HiringDate, opt => opt.MapFrom(src => src.HiringDate))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => DateTime.Now));// Actualizar el campo UpdatedAt automáticamente
+
+
+           CreateMap<PrescriptionRequestDto, Prescription>()
+                .ForMember(dest => dest.PrescriptionDate, opt => opt.MapFrom(src => src.PrescriptionDate))
+                .ForMember(dest => dest.Diagnosis, opt => opt.MapFrom(src => src.Diagnosis))
+                .ForMember(dest => dest.Treatment, opt => opt.MapFrom(src => src.Treatment))
+                .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => src.Notes))
+                .ForMember(dest => dest.Observations, opt => opt.MapFrom(src => src.Observations))
+                .ForMember(dest => dest.PatientId, opt => opt.MapFrom(src => src.PatientId))
+                .ForMember(dest => dest.DoctorId, opt => opt.MapFrom(src => src.DoctorId))
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore()) // Se establecerá en el servicio
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore()); // Se actualizará en el servicio
+
+
+           CreateMap<Prescription, PrescriptionResponseDto>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.PrescriptionDate, opt => opt.MapFrom(src => src.PrescriptionDate))
+                .ForMember(dest => dest.Diagnosis, opt => opt.MapFrom(src => src.Diagnosis))
+                .ForMember(dest => dest.Treatment, opt => opt.MapFrom(src => src.Treatment))
+                .ForMember(dest => dest.Notes, opt => opt.MapFrom(src => src.Notes))
+                .ForMember(dest => dest.Observations, opt => opt.MapFrom(src => src.Observations))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
+                .ForMember(dest => dest.Patient, opt => opt.MapFrom(src => src.Patient))
+                .ForMember(dest => dest.Doctor, opt => opt.MapFrom(src => src.Doctor));
 
         }
     }

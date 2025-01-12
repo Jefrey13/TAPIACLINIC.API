@@ -6,6 +6,7 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
+using QuestPDF.Infrastructure;
 
 namespace Application
 {
@@ -13,6 +14,9 @@ namespace Application
     {
         public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {
+
+            // Configurar la licencia de QuestPDF
+            QuestPDF.Settings.License = LicenseType.Community;
             // Registrar servicios de la aplicación
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
@@ -41,7 +45,10 @@ namespace Application
             services.AddTransient<IMedicalRecordAppService, MedicalRecordAppService>();
             services.AddTransient<IMenuAppService, MenuAppService>();
             services.AddTransient<IStateAppService, StateAppService>();
+            services.AddTransient<IPrescriptionAppService, PrescriptionAppService>();
             services.AddTransient<IContactService, ContactService>();
+
+
 
             return services;
         }
