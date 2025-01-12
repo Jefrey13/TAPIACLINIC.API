@@ -22,16 +22,17 @@ namespace Infrastructure.Data.Repositories
         }
 
         /// <summary>
-        /// Retrieves a medical record by the patient's ID, including related Patient and Staff entities.
+        /// Retrieves the list of medical records for a given patient ID, including related Patient and Staff entities.
         /// </summary>
-        /// <param name="patientId">The ID of the patient whose medical record is being retrieved.</param>
-        /// <returns>The medical record with related Patient and Staff, or null if not found.</returns>
-        public async Task<MedicalRecord> GetMedicalRecordByPatientIdAsync(int patientId)
+        /// <param name="patientId">The ID of the patient whose medical records to retrieve.</param>
+        /// <returns>A list of medical records with related Patient and Staff, or an empty list if none are found.</returns>
+        public async Task<List<MedicalRecord>> GetMedicalRecordByPatientIdAsync(int patientId)
         {
             return await _context.MedicalRecords
                 .Include(mr => mr.Patient)  // Include the related Patient entity
                 .Include(mr => mr.Staff)    // Include the related Staff entity
-                .FirstOrDefaultAsync(mr => mr.PatientId == patientId);
+                .Where(mr => mr.PatientId == patientId)  // Filter by patient ID
+                .ToListAsync(); // Convert the query result to a list
         }
 
         /// <summary>

@@ -1,25 +1,21 @@
 ﻿using Application.Models.ReponseDtos;
 using MediatR;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Queries.MedicalRecords
 {
     /// <summary>
-    /// Query to retrieve a medical record based on a patient's ID.
+    /// Query to retrieve medical records based on a patient's ID.
     /// </summary>
-    public class GetMedicalRecordByPatientIdQuery : IRequest<MedicalRecordResponseDto>
+    public class GetMedicalRecordsByPatientIdQuery : IRequest<List<MedicalRecordResponseDto>>
     {
         public int PatientId { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the GetMedicalRecordByPatientIdQuery class.
+        /// Initializes a new instance of the GetMedicalRecordsByPatientIdQuery class.
         /// </summary>
-        /// <param name="patientId">The ID of the patient whose medical record is being retrieved.</param>
-        public GetMedicalRecordByPatientIdQuery(int patientId)
+        /// <param name="patientId">The ID of the patient whose medical records are being retrieved.</param>
+        public GetMedicalRecordsByPatientIdQuery(int patientId)
         {
             PatientId = patientId;
         }

@@ -75,34 +75,34 @@ namespace API.Controllers
         }
 
         /// <summary>
-        /// Recupera un expediente médico por el ID del paciente.
+        /// Recupera los expedientes médicos por el ID del paciente.
         /// </summary>
-        /// <param name="patientId">El ID del paciente cuyo expediente médico se recuperará.</param>
-        /// <returns>Los detalles del expediente médico del paciente o un 404 si no se encuentra.</returns>
+        /// <param name="patientId">El ID del paciente cuyos expedientes médicos se recuperarán.</param>
+        /// <returns>Una lista de expedientes médicos del paciente o un 404 si no se encuentran registros.</returns>
         [HttpGet("patient/{patientId}")]
-        public async Task<ActionResult<ApiResponse<MedicalRecordResponseDto>>> GetMedicalRecordByPatientId(int patientId)
+        public async Task<ActionResult<ApiResponse<List<MedicalRecordResponseDto>>>> GetMedicalRecordsByPatientId(int patientId)
         {
             if (patientId <= 0)
             {
-                return ResponseHelper.BadRequest<MedicalRecordResponseDto>("ID de paciente inválido");
+                return ResponseHelper.BadRequest<List<MedicalRecordResponseDto>>("ID de paciente inválido");
             }
 
             try
             {
-                var record = await _medicalRecordAppService.GetMedicalRecordByPatientIdAsync(patientId);
-                if (record == null)
+                var records = await _medicalRecordAppService.GetMedicalRecordsByPatientIdAsync(patientId);
+
+                if (records == null || !records.Any())
                 {
-                    return ResponseHelper.NotFound<MedicalRecordResponseDto>("Expediente médico no encontrado para el paciente");
+                    return ResponseHelper.NotFound<List<MedicalRecordResponseDto>>("No se encontraron expedientes médicos para el paciente especificado");
                 }
 
-                return ResponseHelper.Success(record, "Expediente médico para el paciente recuperado exitosamente");
+                return ResponseHelper.Success(records, "Expedientes médicos del paciente recuperados exitosamente");
             }
             catch (Exception ex)
             {
-                return ResponseHelper.Error<MedicalRecordResponseDto>($"Ocurrió un error. Intente mas tarde");
+                return ResponseHelper.Error<List<MedicalRecordResponseDto>>("Ocurrió un error. Intente más tarde");
             }
         }
-
         [HttpPost]
         public async Task<ActionResult<ApiResponse<int>>> CreateMedicalRecord([FromBody] MedicalRecordRequestDto medicalRecordRequest)
         {

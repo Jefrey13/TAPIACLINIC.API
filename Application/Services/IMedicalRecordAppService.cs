@@ -46,10 +46,11 @@ namespace Application.Services
         Task<MedicalRecordResponseDto> GetMedicalRecordByIdAsync(int id);
 
         /// <summary>
-        /// Retrieves a medical record by the patient's ID.
+        /// Retrieves a list of medical records for the specified patient ID.
         /// </summary>
-        /// <param name="patientId">The ID of the patient whose medical record is being retrieved.</param>
-        /// <returns>A MedicalRecordResponseDto representing the requested medical record for the patient.</returns>
-        Task<MedicalRecordResponseDto> GetMedicalRecordByPatientIdAsync(int patientId);
+        /// <param name="patientId">The ID of the patient whose medical records are being retrieved.</param>
+        /// <returns>A list of MedicalRecordResponseDto representing the patient's medical records.</returns>
+        Task<List<MedicalRecordResponseDto>> GetMedicalRecordsByPatientIdAsync(int patientId);
+
     }
 }

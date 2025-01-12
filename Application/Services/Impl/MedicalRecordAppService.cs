@@ -92,14 +92,14 @@ namespace Application.Services.Impl
         }
 
         /// <summary>
-        /// Sends a query to retrieve a medical record by the patient's ID.
-        /// Returns detailed information about the medical record for the specified patient.
+        /// Sends a query to retrieve medical records by the patient's ID.
+        /// Returns detailed information about the medical records for the specified patient.
         /// </summary>
-        /// <param name="patientId">The ID of the patient whose medical record is being retrieved.</param>
-        /// <returns>Returns a MedicalRecordResponseDto with the patient's medical record details.</returns>
-        public async Task<MedicalRecordResponseDto> GetMedicalRecordByPatientIdAsync(int patientId)
+        /// <param name="patientId">The ID of the patient whose medical records are being retrieved.</param>
+        /// <returns>A list of MedicalRecordResponseDto with the patient's medical records details.</returns>
+        public async Task<List<MedicalRecordResponseDto>> GetMedicalRecordsByPatientIdAsync(int patientId)
         {
-            return await _mediator.Send(new GetMedicalRecordByPatientIdQuery(patientId));
+            return await _mediator.Send(new GetMedicalRecordsByPatientIdQuery(patientId));
         }
     }
 }
