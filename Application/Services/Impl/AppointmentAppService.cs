@@ -2,6 +2,7 @@
 using Application.Models.RequestDtos;
 using Application.Models.ResponseDtos;
 using Application.Queries.Appointments;
+using Application.Queries.Staffs;
 using Application.Services;
 using Domain.Repositories;
 using MediatR;
@@ -47,7 +48,13 @@ namespace Application.Services.Impl
                 throw new Exception("User not found.");
             }
 
-            // Create the appointment
+            if (user.RoleId != 4){
+                var resultStaff = await _mediator.Send(new GetStaffByUserIdQuery(user.Id));
+
+                // Create the appointment
+                command.AppointmentDto.StaffId = resultStaff.Id;
+            }
+           
             var appointmentId = await _mediator.Send(command);
             var appointment = await _mediator.Send(new GetAppointmentByIdQuery(appointmentId));
 
@@ -76,7 +83,14 @@ namespace Application.Services.Impl
                 throw new Exception("User not found.");
             }
 
-            // Update the appointment
+            if (user.RoleId != 4)
+            {
+                var resultStaff = await _mediator.Send(new GetStaffByUserIdQuery(user.Id));
+
+                // Create the appointment
+                command.AppointmentDto.StaffId = resultStaff.Id;
+            }
+
             await _mediator.Send(command);
             var appointment = await _mediator.Send(new GetAppointmentByIdQuery(command.Id));
 
@@ -95,9 +109,18 @@ namespace Application.Services.Impl
             await _mediator.Send(command);
         }
 
-        public async Task<IEnumerable<AppointmentResponseDto>> GetAllAppointmentsAsync()
+        public async Task<IEnumerable<AppointmentResponseDto>> GetAllAppointmentsAsync(string jwtToken)
         {
-            return await _mediator.Send(new GetAllAppointmentsQuery());
+            // Extract the username from the JWT token
+            var username = _jwtTokenService.GetUsernameFromToken(jwtToken);
+            var user = await _userRepository.GetUserByUserNameAsync(username);
+
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            return await _mediator.Send(new GetAllAppointmentsQuery(user.RoleId, user.Id));
         }
 
         public async Task<AppointmentResponseDto> GetAppointmentByIdAsync(int id)

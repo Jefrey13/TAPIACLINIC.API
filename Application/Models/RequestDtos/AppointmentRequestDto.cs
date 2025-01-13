@@ -18,7 +18,7 @@
         /// <summary>
         /// The ID of the staff member for the appointment.
         /// </summary>
-        public int StaffId { get; set; }
+        public int? StaffId { get; set; }
 
         /// <summary>
         /// The ID of the specialty associated with the appointment.
@@ -40,9 +40,6 @@
         /// </summary>
         public string Reason { get; set; }
 
-        /// <summary>
-        /// Indicates whether the appointment is active.
-        /// </summary>
-        public bool Active { get; set; }
+        public string? ChangeReason { get; set; }
     }
 }

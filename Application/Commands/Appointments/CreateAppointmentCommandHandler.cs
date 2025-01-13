@@ -22,9 +22,31 @@ namespace Application.Handlers.Appointments
 
         public async Task<int> Handle(CreateAppointmentCommand request, CancellationToken cancellationToken)
         {
-            var appointment = _mapper.Map<Appointment>(request.AppointmentDto);
-            await _appointmentRepository.AddAsync(appointment);
-            return appointment.Id;
+            try
+            {
+                // Validar si los datos del DTO son válidos
+                if (request.AppointmentDto == null)
+                {
+                    throw new ArgumentException("Appointment data is required");
+                }
+
+                var appointment = _mapper.Map<Appointment>(request.AppointmentDto);
+
+                // Validar si los IDs relacionados son válidos
+                if (appointment.PatientId <= 0 || appointment.StaffId <= 0 || appointment.SpecialtyId <= 0 || appointment.ScheduleId <= 0)
+                {
+                    throw new ArgumentException("Invalid related entity IDs");
+                }
+
+                await _appointmentRepository.AddAsync(appointment);
+                return appointment.Id;
+            }
+            catch (Exception ex)
+            {
+                // Loguear el error (puede reemplazarse con un servicio de logging)
+                Console.WriteLine($"Error creating appointment: {ex.Message}");
+                throw;
+            }
         }
     }
 }

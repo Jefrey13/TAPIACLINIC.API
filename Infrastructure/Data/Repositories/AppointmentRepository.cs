@@ -9,16 +9,25 @@ public class AppointmentRepository : BaseRepository<Appointment>, IAppointmentRe
     public AppointmentRepository(ApplicationDbContext context) : base(context) { }
 
     // Método para obtener citas por PatientId con las relaciones necesarias
-    public override async Task<IEnumerable<Appointment>> GetAllAsync()
+    // Método para obtener citas con filtro por rol e id de usuario
+    public async Task<IEnumerable<Appointment>> GetAllAsync(int? idRole = null, int id = 0)
     {
-        return await _context.Appointments
+        var query = _context.Appointments
             .Include(a => a.Patient)                // Incluir el usuario paciente
             .Include(a => a.Staff)                  // Incluir el staff
-                .ThenInclude(s => s.User)           // Incluir el usuario del staff
+            .ThenInclude(s => s.User)               // Incluir el usuario del staff
             .Include(a => a.Specialty)              // Incluir la especialidad
             .Include(a => a.Schedule)               // Incluir el horario
             .Include(a => a.State)                  // Incluir el estado
-            .ToListAsync();
+            .AsQueryable();
+
+        // Filtro por rol
+        if (idRole == 4) // Si el rol es igual a 4 (paciente)
+        {
+            query = query.Where(a => a.Patient.Id == id); // Filtrar citas por id del paciente
+        }
+
+        return await query.ToListAsync();
     }
 
     // Método para obtener una cita específica por Id con las relaciones necesarias
@@ -40,7 +49,7 @@ public class AppointmentRepository : BaseRepository<Appointment>, IAppointmentRe
         return await _context.Appointments
             .Where(a => a.PatientId == patientId)
             .Include(a => a.Staff)                  // Incluir el staff
-                .ThenInclude(s => s.User)           // Incluir el usuario del staff
+            .ThenInclude(s => s.User)           // Incluir el usuario del staff
             .Include(a => a.Specialty)              // Incluir la especialidad
             .Include(a => a.Schedule)               // Incluir el horario
             .Include(a => a.State)                  // Incluir el estado

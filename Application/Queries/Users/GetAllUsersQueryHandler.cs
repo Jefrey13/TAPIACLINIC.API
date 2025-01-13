@@ -24,7 +24,7 @@ namespace Application.Queries.Users
 
         public async Task<IEnumerable<UserResponseDto>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
         {
-            var users = await _userRepository.GetAllAsync();
+            var users = await _userRepository.GetAllAsync(request.RoleId, request.Id);
             return _mapper.Map<IEnumerable<UserResponseDto>>(users);
         }
     }

@@ -31,7 +31,8 @@ namespace API.Controllers
         {
             try
             {
-                var users = await _userAppService.GetAllUsersAsync();
+                var jwtToken = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                var users = await _userAppService.GetAllUsersAsync(jwtToken);
 
                 if (users == null || !users.Any())
                 {

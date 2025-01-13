@@ -86,6 +86,7 @@ namespace Application.Mappings
                 .ForMember(dest => dest.ScheduleId, opt => opt.MapFrom(src => src.ScheduleId))
                 .ForMember(dest => dest.StateId, opt => opt.MapFrom(src => src.StateId))
                 .ForMember(dest => dest.Reason, opt => opt.MapFrom(src => src.Reason))
+                .ForMember(dest => dest.ChangeReason, opt => opt.MapFrom(src => src.ChangeReason))
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())  // CreatedAt will be set when creating the entity
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore()); // UpdatedAt will be set when updating the entity
 
@@ -98,7 +99,8 @@ namespace Application.Mappings
                 .ForMember(dest => dest.Specialty, opt => opt.MapFrom(src => src.Specialty))  // Map to SpecialtyDto
                 .ForMember(dest => dest.Schedule, opt => opt.MapFrom(src => src.Schedule))  // Map to ScheduleResponseDto
                 .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State))  // Map to StateDto
-                .ForMember(dest => dest.Reason, opt => opt.MapFrom(src => src.Reason));
+                .ForMember(dest => dest.Reason, opt => opt.MapFrom(src => src.Reason))
+                .ForMember(dest => dest.ChangeReason, opt => opt.MapFrom(src => src.ChangeReason));
 
             // Mapeo para la entidad MedicalRecord y su DTO (Solicitud)
             CreateMap<MedicalRecordRequestDto, MedicalRecord>()

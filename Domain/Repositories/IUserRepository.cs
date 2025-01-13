@@ -13,4 +13,7 @@ public interface IUserRepository : IRepository<User>
     Task<bool> UpdateUserIsAccountActivated(string email);
 
     Task CreateAdminUserAsync();
+
+    // Implementación específica para GetAllAsync con idRole
+    Task<IEnumerable<User>> GetAllAsync(int? idRole = null, int id = 0);
 }

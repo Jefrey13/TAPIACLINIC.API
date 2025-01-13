@@ -18,9 +18,9 @@
         public User Patient { get; set; }
 
         [Required]
-        public int StaffId { get; set; }
+        public int? StaffId { get; set; }
         [ForeignKey("StaffId")]
-        public Staff Staff { get; set; }
+        public Staff? Staff { get; set; }
 
         [Required]
         public int SpecialtyId { get; set; }
@@ -40,7 +40,10 @@
         [MaxLength(255)]
         public string Reason { get; set; }
 
+        [MaxLength(255)]
+        public string? ChangeReason { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+            public DateTime UpdatedAt { get; set; } = DateTime.Now;
     }

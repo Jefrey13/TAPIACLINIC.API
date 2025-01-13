@@ -20,14 +20,28 @@ namespace Application.Handlers.Appointments
 
         public async Task<Unit> Handle(DeleteAppointmentCommand request, CancellationToken cancellationToken)
         {
-            var appointment = await _appointmentRepository.GetByIdAsync(request.Id);
-            if (appointment == null)
+            try
             {
-                throw new NotFoundException(nameof(Appointment), request.Id);
-            }
+                // Validar el ID de la cita
+                if (request.Id <= 0)
+                {
+                    throw new ArgumentException("Invalid appointment ID");
+                }
 
-            await _appointmentRepository.ToggleActiveStateAsync(appointment);
-            return Unit.Value;
+                var appointment = await _appointmentRepository.GetByIdAsync(request.Id);
+                if (appointment == null)
+                {
+                    throw new NotFoundException(nameof(Appointment), request.Id);
+                }
+
+                await _appointmentRepository.ToggleActiveStateAsync(appointment);
+                return Unit.Value;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting appointment: {ex.Message}");
+                throw;
+            }
         }
     }
 }

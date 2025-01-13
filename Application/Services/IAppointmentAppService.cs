@@ -36,7 +36,7 @@ namespace Application.Services
         /// Retrieves all appointments.
         /// </summary>
         /// <returns>A list of all appointment DTOs.</returns>
-        Task<IEnumerable<AppointmentResponseDto>> GetAllAppointmentsAsync();
+        Task<IEnumerable<AppointmentResponseDto>> GetAllAppointmentsAsync(string jwtToken);
 
         /// <summary>
         /// Retrieves an appointment by its ID.

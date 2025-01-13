@@ -25,7 +25,7 @@ namespace Application.Models.ResponseDtos
         /// <summary>
         /// The staff member details associated with the appointment.
         /// </summary>
-        public StaffResponseDto Staff { get; set; }
+        public StaffResponseDto? Staff { get; set; }
 
         /// <summary>
         /// The specialty details associated with the appointment.
@@ -47,9 +47,6 @@ namespace Application.Models.ResponseDtos
         /// </summary>
         public string Reason { get; set; }
 
-        /// <summary>
-        /// Indicates whether the appointment is active.
-        /// </summary>
-        public bool Active { get; set; }
+        public string? ChangeReason { get; set; }
     }
 }

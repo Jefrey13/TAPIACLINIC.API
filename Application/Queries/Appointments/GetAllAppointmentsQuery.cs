@@ -10,5 +10,14 @@ namespace Application.Queries.Appointments
     /// </summary>
     public class GetAllAppointmentsQuery : IRequest<IEnumerable<AppointmentResponseDto>>
     {
+        public int? RoleId { get; set; }
+        public int Id { get; set; }
+
+
+        public GetAllAppointmentsQuery(int? roleId, int id)
+        {
+            RoleId = roleId;
+            Id = id;
+        }
     }
 }

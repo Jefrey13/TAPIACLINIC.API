@@ -25,13 +25,27 @@ namespace Application.Handlers.Appointments
 
         public async Task<AppointmentResponseDto> Handle(GetAppointmentByIdQuery request, CancellationToken cancellationToken)
         {
-            var appointment = await _appointmentRepository.GetByIdAsync(request.Id);
-            if (appointment == null)
+            try
             {
-                throw new NotFoundException(nameof(Appointment), request.Id);
-            }
+                if (request.Id <= 0)
+                {
+                    throw new ArgumentException("Invalid appointment ID");
+                }
 
-            return _mapper.Map<AppointmentResponseDto>(appointment);
+                var appointment = await _appointmentRepository.GetByIdAsync(request.Id);
+
+                if (appointment == null)
+                {
+                    throw new NotFoundException(nameof(Appointment), request.Id);
+                }
+
+                return _mapper.Map<AppointmentResponseDto>(appointment);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving appointment by ID: {ex.Message}");
+                throw;
+            }
         }
     }
 }

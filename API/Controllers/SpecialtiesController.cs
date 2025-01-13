@@ -26,15 +26,20 @@ namespace API.Controllers
         [HttpGet]
         public async Task<ActionResult<ApiResponse<IEnumerable<SpecialtyDto>>>> GetAllSpecialties()
         {
-            var specialties = await _specialtyAppService.GetAllSpecialtiesAsync();
-
-            if (specialties == null || !specialties.Any())
+            try
             {
-                return NotFound(new ApiResponse<IEnumerable<SpecialtyDto>>(false, "No specialties found", null, 404));
-            }
+                var specialties = await _specialtyAppService.GetAllSpecialtiesAsync();
+                if (specialties == null || !specialties.Any())
+                {
+                    return ResponseHelper.NotFound<IEnumerable<SpecialtyDto>>("No specialties found.");
+                }
 
-            var response = new ApiResponse<IEnumerable<SpecialtyDto>>(true, "Specialties retrieved successfully", specialties, 200);
-            return Ok(response);
+                return ResponseHelper.Success(specialties, "Specialties retrieved successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<IEnumerable<SpecialtyDto>>($"An error occurred: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -47,17 +52,23 @@ namespace API.Controllers
         {
             if (id <= 0)
             {
-                return BadRequest(new ApiResponse<SpecialtyDto>(false, "Invalid specialty ID", null, 400));
+                return ResponseHelper.BadRequest<SpecialtyDto>("Invalid specialty ID.");
             }
 
-            var specialty = await _specialtyAppService.GetSpecialtyByIdAsync(id);
-            if (specialty == null)
+            try
             {
-                return NotFound(new ApiResponse<SpecialtyDto>(false, "Specialty not found", null, 404));
-            }
+                var specialty = await _specialtyAppService.GetSpecialtyByIdAsync(id);
+                if (specialty == null)
+                {
+                    return ResponseHelper.NotFound<SpecialtyDto>("Specialty not found.");
+                }
 
-            var response = new ApiResponse<SpecialtyDto>(true, "Specialty retrieved successfully", specialty, 200);
-            return Ok(response);
+                return ResponseHelper.Success(specialty, "Specialty retrieved successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<SpecialtyDto>($"An error occurred: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -70,12 +81,18 @@ namespace API.Controllers
         {
             if (specialtyDto == null)
             {
-                return BadRequest(new ApiResponse<int?>(false, "Specialty data is required", null, 400));
+                return ResponseHelper.BadRequest<int>("Specialty data is required.");
             }
 
-            var createdSpecialtyId = await _specialtyAppService.CreateSpecialtyAsync(new CreateSpecialtyCommand(specialtyDto));
-            var response = new ApiResponse<int>(true, "Specialty created successfully", createdSpecialtyId, 201);
-            return CreatedAtAction(nameof(GetSpecialtyById), new { id = createdSpecialtyId }, response);
+            try
+            {
+                var createdSpecialtyId = await _specialtyAppService.CreateSpecialtyAsync(new CreateSpecialtyCommand(specialtyDto));
+                return ResponseHelper.Success(createdSpecialtyId, "Specialty created successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<int>($"{ex.Message}");
+            }
         }
 
         /// <summary>
@@ -83,48 +100,60 @@ namespace API.Controllers
         /// </summary>
         /// <param name="id">The ID of the specialty to update.</param>
         /// <param name="specialtyDto">The updated details of the specialty.</param>
-        /// <returns>No content if the update is successful, 400 if the ID mismatch occurs.</returns>
+        /// <returns>A success message if the update is successful.</returns>
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> UpdateSpecialty(int id, [FromBody] SpecialtyDto specialtyDto)
         {
             if (id <= 0 || specialtyDto == null)
             {
-                return BadRequest(new ApiResponse<string>(false, "Invalid ID or specialty data", null, 400));
+                return ResponseHelper.BadRequest<string>("Invalid ID or specialty data.");
             }
 
-            var existingSpecialty = await _specialtyAppService.GetSpecialtyByIdAsync(id);
-            if (existingSpecialty == null)
+            try
             {
-                return NotFound(new ApiResponse<string>(false, "Specialty not found", null, 404));
-            }
+                var existingSpecialty = await _specialtyAppService.GetSpecialtyByIdAsync(id);
+                if (existingSpecialty == null)
+                {
+                    return ResponseHelper.NotFound<string>("Specialty not found.");
+                }
 
-            await _specialtyAppService.UpdateSpecialtyAsync(new UpdateSpecialtyCommand(id, specialtyDto));
-            var response = new ApiResponse<string>(true, "Specialty updated successfully", null, 200);
-            return Ok(response);
+                await _specialtyAppService.UpdateSpecialtyAsync(new UpdateSpecialtyCommand(id, specialtyDto));
+                return ResponseHelper.Success<string>(null, "Specialty updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<string>($"An error occurred: {ex.Message}");
+            }
         }
 
         /// <summary>
         /// Deletes a medical specialty by its ID.
         /// </summary>
         /// <param name="id">The ID of the specialty to delete.</param>
-        /// <returns>No content if the deletion is successful.</returns>
+        /// <returns>A success message if the deletion is successful.</returns>
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse<string>>> DeleteSpecialty(int id)
         {
             if (id <= 0)
             {
-                return BadRequest(new ApiResponse<string>(false, "Invalid specialty ID", null, 400));
+                return ResponseHelper.BadRequest<string>("Invalid specialty ID.");
             }
 
-            var existingSpecialty = await _specialtyAppService.GetSpecialtyByIdAsync(id);
-            if (existingSpecialty == null)
+            try
             {
-                return NotFound(new ApiResponse<string>(false, "Specialty not found", null, 404));
-            }
+                var existingSpecialty = await _specialtyAppService.GetSpecialtyByIdAsync(id);
+                if (existingSpecialty == null)
+                {
+                    return ResponseHelper.NotFound<string>("Specialty not found.");
+                }
 
-            await _specialtyAppService.DeleteSpecialtyAsync(id);
-            var response = new ApiResponse<string>(true, "Specialty deleted successfully", null, 204);
-            return Ok(response);
+                await _specialtyAppService.DeleteSpecialtyAsync(id);
+                return ResponseHelper.Success<string>(null, "Specialty deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                return ResponseHelper.Error<string>($"An error occurred: {ex.Message}");
+            }
         }
     }
 }

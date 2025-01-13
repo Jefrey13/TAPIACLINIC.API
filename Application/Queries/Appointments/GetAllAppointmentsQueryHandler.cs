@@ -1,4 +1,5 @@
-﻿using Application.Models.ResponseDtos;
+﻿using Application.Exceptions;
+using Application.Models.ResponseDtos;
 using Application.Queries.Appointments;
 using AutoMapper;
 using Domain.Repositories;
@@ -22,8 +23,22 @@ namespace Application.Handlers.Appointments
 
         public async Task<IEnumerable<AppointmentResponseDto>> Handle(GetAllAppointmentsQuery request, CancellationToken cancellationToken)
         {
-            var appointments = await _appointmentRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<AppointmentResponseDto>>(appointments);
+            try
+            {
+                var appointments = await _appointmentRepository.GetAllAsync(request.RoleId, request.Id);
+
+                if (appointments == null || !appointments.Any())
+                {
+                    throw new NotFoundException("Appointments", "No appointments found");
+                }
+
+                return _mapper.Map<IEnumerable<AppointmentResponseDto>>(appointments);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving all appointments: {ex.Message}");
+                throw;
+            }
         }
     }
 }

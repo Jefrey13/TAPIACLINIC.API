@@ -9,5 +9,14 @@ namespace Application.Queries.Users
     /// </summary>
     public class GetAllUsersQuery : IRequest<IEnumerable<UserResponseDto>>
     {
+        public int? RoleId { get; set; }
+        public int Id { get; set; }
+
+
+        public GetAllUsersQuery(int? roleId, int id)
+        {
+            RoleId = roleId;
+            Id = id;
+        }
     }
 }

@@ -24,14 +24,27 @@ namespace Application.Queries.Appointments
 
         public async Task<IEnumerable<AppointmentResponseDto>> Handle(GetAppointmentsByStateQuery request, CancellationToken cancellationToken)
         {
-            var appointments = await _appointmentRepository.GetByStateAsync(request.StateName);
-
-            if (appointments == null || !appointments.Any())
+            try
             {
-                throw new NotFoundException("Appointment", request.StateName);
-            }
+                if (string.IsNullOrWhiteSpace(request.StateName))
+                {
+                    throw new ArgumentException("State name is required");
+                }
 
-            return _mapper.Map<IEnumerable<AppointmentResponseDto>>(appointments);
+                var appointments = await _appointmentRepository.GetByStateAsync(request.StateName);
+
+                if (appointments == null || !appointments.Any())
+                {
+                    throw new NotFoundException("Appointments", $"No appointments found for state '{request.StateName}'");
+                }
+
+                return _mapper.Map<IEnumerable<AppointmentResponseDto>>(appointments);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving appointments by state: {ex.Message}");
+                throw;
+            }
         }
     }
 }

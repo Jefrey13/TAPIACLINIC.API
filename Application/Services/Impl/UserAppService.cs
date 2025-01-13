@@ -3,6 +3,7 @@ using Application.Models.ReponseDtos;
 using Application.Queries.Users;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Repositories;
 using MediatR;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,17 +19,19 @@ namespace Application.Services.Impl
         private readonly IMediator _mediator;
         private readonly IMapper _mapper;
         private readonly IJwtTokenService _jwtTokenService;
+        private readonly IUserRepository _userRepository;
 
         /// <summary>
         /// Constructor to initialize dependencies for MediatR and AutoMapper.
         /// </summary>
         /// <param name="mediator">MediatR instance to dispatch commands and queries.</param>
         /// <param name="mapper">AutoMapper instance to map between entities and DTOs.</param>
-        public UserAppService(IMediator mediator, IMapper mapper, IJwtTokenService jwtTokenService)
+        public UserAppService(IMediator mediator, IMapper mapper, IJwtTokenService jwtTokenService, IUserRepository userRepository)
         {
             _mediator = mediator;
             _mapper = mapper;
             _jwtTokenService = jwtTokenService;
+            _userRepository = userRepository;
         }
 
         /// <summary>
@@ -76,9 +79,17 @@ namespace Application.Services.Impl
         /// The result is a collection of UserResponseDto containing user information.
         /// </summary>
         /// <returns>Returns a list of users with their details.</returns>
-        public async Task<IEnumerable<UserResponseDto>> GetAllUsersAsync()
+        public async Task<IEnumerable<UserResponseDto>> GetAllUsersAsync(string jwtToken)
         {
-            return await _mediator.Send(new GetAllUsersQuery());
+            // Extract the username from the JWT token
+            var username = _jwtTokenService.GetUsernameFromToken(jwtToken);
+            var user = await _userRepository.GetUserByUserNameAsync(username);
+
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+            return await _mediator.Send(new GetAllUsersQuery(user.RoleId, user.Id));
         }
 
         /// <summary>

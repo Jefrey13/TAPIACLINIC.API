@@ -303,6 +303,24 @@ namespace Infrastructure.Data.Repositories
             }
         }
 
+        // Método para obtener citas por PatientId con las relaciones necesarias
+        // Método para obtener citas con filtro por rol e id de usuario
+        public async Task<IEnumerable<User>> GetAllAsync(int? idRole = null, int id = 0)
+        {
+            var query = _context.Users
+                .Include(a => a.State) 
+                .Include(a => a.Role)
+                .AsQueryable();
+
+            // Filtro por rol
+            if (idRole == 4) // Si el rol es igual a 4 (paciente)
+            {
+                query = query.Where(a => a.Id == id); // Filtrar citas por id del paciente
+            }
+
+            return await query.ToListAsync();
+        }
+
 
         public async Task UpdatePasswordAsync(User user)
         {
