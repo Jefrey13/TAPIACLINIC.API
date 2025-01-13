@@ -17,10 +17,9 @@
         [ForeignKey("PatientId")]
         public User Patient { get; set; }
 
-        [Required]
         public int? StaffId { get; set; }
         [ForeignKey("StaffId")]
-        public Staff? Staff { get; set; }
+        public Staff Staff { get; set; }
 
         [Required]
         public int SpecialtyId { get; set; }
@@ -32,7 +31,8 @@
         [ForeignKey("ScheduleId")]
         public Schedule Schedule { get; set; }
 
-        [Required]
+
+    [Required]
         public int StateId { get; set; }
         [ForeignKey("StateId")]
         public State State { get; set; }

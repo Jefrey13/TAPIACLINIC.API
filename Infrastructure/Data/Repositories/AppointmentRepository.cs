@@ -8,39 +8,83 @@ public class AppointmentRepository : BaseRepository<Appointment>, IAppointmentRe
 {
     public AppointmentRepository(ApplicationDbContext context) : base(context) { }
 
-    // Método para obtener citas por PatientId con las relaciones necesarias
-    // Método para obtener citas con filtro por rol e id de usuario
     public async Task<IEnumerable<Appointment>> GetAllAsync(int? idRole = null, int id = 0)
     {
-        var query = _context.Appointments
-            .Include(a => a.Patient)                // Incluir el usuario paciente
-            .Include(a => a.Staff)                  // Incluir el staff
-            .ThenInclude(s => s.User)               // Incluir el usuario del staff
-            .Include(a => a.Specialty)              // Incluir la especialidad
-            .Include(a => a.Schedule)               // Incluir el horario
-            .Include(a => a.State)                  // Incluir el estado
-            .AsQueryable();
-
-        // Filtro por rol
-        if (idRole == 4) // Si el rol es igual a 4 (paciente)
+        try
         {
-            query = query.Where(a => a.Patient.Id == id); // Filtrar citas por id del paciente
-        }
+            var query = _context.Appointments
+                .Include(a => a.Patient)         // Incluir el usuario paciente
+                .Include(a => a.Specialty)       // Incluir la especialidad
+                .Include(a => a.Schedule)        // Incluir el horario
+                .Include(a => a.State)           // Incluir el estado
+                .AsQueryable();
 
-        return await query.ToListAsync();
+            // Filtro por rol
+            if (idRole == 4) // Si el rol es igual a 4 (paciente)
+            {
+                query = query.Where(a => a.Patient.Id == id); // Filtrar citas por id del paciente
+            }
+
+            // Ejecutar la consulta principal
+            var appointments = await query.ToListAsync();
+
+            // Cargar Staff y User condicionalmente solo si StaffId tiene valor
+            foreach (var appointment in appointments)
+            {
+                if (appointment.StaffId.HasValue)
+                {
+                    await _context.Entry(appointment)
+                        .Reference(a => a.Staff)
+                        .Query()
+                        .Include(s => s.User)
+                        .LoadAsync();
+                }
+            }
+
+            return appointments;
+        }
+        catch (Exception ex)
+        {
+            throw new ApplicationException("Unable to retrieve appointments.", ex);
+        }
     }
 
-    // Método para obtener una cita específica por Id con las relaciones necesarias
+
     public override async Task<Appointment> GetByIdAsync(int id)
     {
-        return await _context.Appointments
-            .Include(a => a.Patient)                // Incluir el usuario paciente
-            .Include(a => a.Staff)                  // Incluir el staff
-                .ThenInclude(s => s.User)           // Incluir el usuario del staff
-            .Include(a => a.Specialty)              // Incluir la especialidad
-            .Include(a => a.Schedule)               // Incluir el horario
-            .Include(a => a.State)                  // Incluir el estado
-            .FirstOrDefaultAsync(a => a.Id == id);
+        try
+        {
+            var query = _context.Appointments
+                .Include(a => a.Patient)         // Incluir el usuario paciente
+                .Include(a => a.Specialty)       // Incluir la especialidad
+                .Include(a => a.Schedule)        // Incluir el horario
+                .Include(a => a.State);          // Incluir el estado
+
+            // Verificar si Staff es requerido
+            var appointment = await query
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (appointment == null)
+            {
+                throw new Exception($"Appointment with ID {id} was not found.");
+            }
+
+            if (appointment.StaffId.HasValue)
+            {
+                // Cargar Staff y su User solo si StaffId tiene valor
+                await _context.Entry(appointment)
+                    .Reference(a => a.Staff)
+                    .Query()
+                    .Include(s => s.User)
+                    .LoadAsync();
+            }
+
+            return appointment;
+        }
+        catch (Exception ex)
+        {
+            throw new ApplicationException($"Unable to retrieve the appointment with ID {id}.", ex);
+        }
     }
 
     // Método para obtener citas por PatientId con las relaciones necesarias
@@ -83,7 +127,6 @@ public class AppointmentRepository : BaseRepository<Appointment>, IAppointmentRe
             .AsNoTracking()
             .ToListAsync();
     }
-
     // Método para actualizar el estado de una cita usando el nombre del nuevo estado
     public async Task<bool> UpdateAppointmentStateAsync(int appointmentId, string StateName)
     {

@@ -7,12 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Queries\Prescriptions\**" />
-    <Compile Remove="Queries\Prescription\**" />
-    <EmbeddedResource Remove="Queries\Prescriptions\**" />
-    <EmbeddedResource Remove="Queries\Prescription\**" />
-    <None Remove="Queries\Prescriptions\**" />
-    <None Remove="Queries\Prescription\**" />
+	<Compile Remove="Queries\Prescriptions\**" />
+	<Compile Remove="Queries\Prescription\**" />
+	<EmbeddedResource Remove="Queries\Prescriptions\**" />
+	<EmbeddedResource Remove="Queries\Prescription\**" />
+	<None Remove="Queries\Prescriptions\**" />
+	<None Remove="Queries\Prescription\**" />
   </ItemGroup>
 
   <ItemGroup>

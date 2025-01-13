@@ -123,6 +123,7 @@ namespace Infrastructure.Data.Repositories
                 }
 
                 user.StateId = 1;
+                user.RoleId = 1;
 
                 //await ValidateUniqueFieldsAsync(user);
                 await base.AddAsync(user);
@@ -310,6 +311,7 @@ namespace Infrastructure.Data.Repositories
             var query = _context.Users
                 .Include(a => a.State) 
                 .Include(a => a.Role)
+                .Where(u => u.RoleId == 4)
                 .AsQueryable();
 
             // Filtro por rol

@@ -14,9 +14,6 @@ namespace Application.Validators
             RuleFor(x => x.AppointmentDto.PatientId)
                 .GreaterThan(0).WithMessage("Patient ID is required.");
 
-            RuleFor(x => x.AppointmentDto.StaffId)
-                .GreaterThan(0).WithMessage("Staff ID is required.");
-
             RuleFor(x => x.AppointmentDto.SpecialtyId)
                 .GreaterThan(0).WithMessage("Specialty ID is required.");
 
