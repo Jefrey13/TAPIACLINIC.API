@@ -123,7 +123,6 @@ namespace Infrastructure.Data.Repositories
                 }
 
                 user.StateId = 1;
-                user.RoleId = 1;
 
                 //await ValidateUniqueFieldsAsync(user);
                 await base.AddAsync(user);

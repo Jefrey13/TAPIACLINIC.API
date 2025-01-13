@@ -46,6 +46,7 @@ namespace Application.Services
         /// <returns>A collection of UserResponseDto representing all users.</returns>
         Task<IEnumerable<UserResponseDto>> GetAllUsersAsync(string jwtToken);
 
+
         /// <summary>
         /// Retrieves a specific user by their ID.
         /// </summary>
